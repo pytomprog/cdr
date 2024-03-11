@@ -1,3 +1,6 @@
+programs/camera/.xmake/
+programs/camera/build/
+
 # Prerequisites
 *.d
 
