@@ -126,7 +126,7 @@ void executeCommand(Command command) {
       case 3:   //set mot 3
         servo3.write(argument*12);
         break;
-      case 4:   //set momorized pos (every motors)
+      case 4:   //set memorized pos (every motors)
         servo1.write(memorizedPositions[argument][0]);
         servo2.write(memorizedPositions[argument][1]);
         servo3.write(memorizedPositions[argument][2]);
