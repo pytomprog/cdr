@@ -3,6 +3,8 @@ add_rules("mode.debug", "mode.release")
 
 add_includedirs("include", "src")
 
+add_requires("sfml")
+
 set_symbols("debug")
 
 target("rollingBase")
@@ -10,6 +12,8 @@ target("rollingBase")
     add_files("src/*.cpp")
     add_headerfiles("include/*.hpp")
     add_headerfiles("src/*.hpp")
+
+    add_packages("sfml")
 
 --    after_build(function (target)
 --        os.mkdir(path.join(target:targetdir(), "assets"))
