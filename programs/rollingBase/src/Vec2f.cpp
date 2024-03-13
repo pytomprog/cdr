@@ -2,14 +2,14 @@
 
 #include "parameters.hpp"
 
-Vec2f::Vec2f(float x, float y) {
+Vec2f::Vec2f(float x, float y, sf::Color color) {
 	m_x = x;
 	m_y = y;
 
-	m_shape = sf::CircleShape(POINTS_RADIUS * ZOOM);
+	m_shape = sf::CircleShape(POINTS_RADIUS * ZOOM, POINTS_SHAPE_EDGES_COUNT);
 	m_shape.setOrigin(POINTS_RADIUS * ZOOM, POINTS_RADIUS * ZOOM);
 	m_shape.setPosition(x * ZOOM, y * ZOOM);
-	m_shape.setFillColor(sf::Color::Green);
+	m_shape.setFillColor(color);
 }
 
 Vec2f Vec2f::operator-() { return Vec2f(-m_x, -m_y); }

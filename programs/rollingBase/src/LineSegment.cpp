@@ -2,13 +2,13 @@
 
 #include "parameters.hpp"
 
-LineSegment::LineSegment(Vec2f p1, Vec2f p2) {
+LineSegment::LineSegment(Vec2f p1, Vec2f p2, sf::Color color) {
 	m_p1 = p1;
 	m_p2 = p2;
 	m_direction = p2 - p1;
 
-	m_shape[0] = sf::Vertex(m_p1.toSfmlVector() * ZOOM);
-	m_shape[1] = sf::Vertex(m_p2.toSfmlVector() * ZOOM);
+	m_shape[0] = sf::Vertex(m_p1.toSfmlVector() * ZOOM, color);
+	m_shape[1] = sf::Vertex(m_p2.toSfmlVector() * ZOOM, color);
 }
 
 void LineSegment::draw(sf::RenderTarget& renderingSurface) {

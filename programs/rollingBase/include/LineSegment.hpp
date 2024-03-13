@@ -1,8 +1,8 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-
 #include "Vec2f.hpp"
+
+#include <SFML/Graphics.hpp>
 
 class LineSegment {
 public:
@@ -12,7 +12,7 @@ public:
 	sf::Vertex m_shape[2];
 
 
-	LineSegment(Vec2f p1, Vec2f p2);
+	LineSegment(Vec2f p1, Vec2f p2, sf::Color color = sf::Color::White);
 
 	void draw(sf::RenderTarget& renderingSurface);
 };

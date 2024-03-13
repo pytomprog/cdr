@@ -5,6 +5,7 @@
 #include "parameters.hpp"
 #include "Vec2f.hpp"
 #include "LineSegment.hpp"
+#include "Circle.hpp"
 
 int main() {
 
@@ -18,12 +19,22 @@ int main() {
             }
         }
 
-        LineSegment testSegment(Vec2f(100.f, 1000.f), Vec2f(2900.f, 1000.f));
+        Vec2f startPoint(100.f, 1000.f), endPoint(2900.f, 1000.f);
+
+        LineSegment testSegment(startPoint, endPoint);
+        Circle testCircle(Vec2f(1500.f, 1100.f), 200.f, sf::Color::Magenta);
+
+
 
         window.clear();
-        testSegment.m_p1.draw(window);
-        testSegment.m_p2.draw(window);
+
+        testCircle.draw(window);
         testSegment.draw(window);
+
+        testCircle.m_center.draw(window);
+        startPoint.draw(window);
+        endPoint.draw(window);
+
         window.display();
     }
 
