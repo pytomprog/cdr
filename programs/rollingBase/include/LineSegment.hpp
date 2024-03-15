@@ -13,6 +13,7 @@ public:
 
 
 	LineSegment(Vec2f p1, Vec2f p2, sf::Color color = sf::Color::White);
+	bool containsPoint(Vec2f p);
 
 	void draw(sf::RenderTarget& renderingSurface);
 };

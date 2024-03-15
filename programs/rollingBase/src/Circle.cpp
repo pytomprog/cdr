@@ -15,6 +15,13 @@ Circle::Circle(Vec2f center, float radius, sf::Color color) {
 	m_shape.setOutlineColor(color);
 }
 
+std::vector<Vec2f> Circle::getPointsOfTangentLines(Vec2f p) {	
+	float distance = (p - m_center).getNorm();
+	float arg = (p - m_center).getArgument();
+	float theta = std::acosf(1 / (distance / m_radius));
+	return std::vector<Vec2f> { m_center + Vec2f(m_radius * cosf(arg + theta), m_radius * sinf(arg + theta)), m_center + Vec2f(m_radius * cosf(arg - theta), m_radius * sinf(arg - theta)) };
+}
+
 void Circle::draw(sf::RenderTarget& renderingSurface) {
 	renderingSurface.draw(m_shape);
 }

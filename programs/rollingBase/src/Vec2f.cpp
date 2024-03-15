@@ -1,5 +1,7 @@
 #include "Vec2f.hpp"
 
+#include <cmath>
+
 #include "parameters.hpp"
 
 Vec2f::Vec2f(float x, float y, sf::Color color) {
@@ -12,6 +14,7 @@ Vec2f::Vec2f(float x, float y, sf::Color color) {
 	m_shape.setFillColor(color);
 }
 
+Vec2f operator*(double nb, Vec2f vec) { return vec * nb; }
 Vec2f Vec2f::operator-() { return Vec2f(-m_x, -m_y); }
 Vec2f Vec2f::operator+(Vec2f otherVec) { return Vec2f(m_x + otherVec.m_x, m_y + otherVec.m_y); }
 Vec2f Vec2f::operator-(Vec2f otherVec) { return Vec2f(m_x - otherVec.m_x, m_y - otherVec.m_y); }
@@ -25,7 +28,18 @@ void Vec2f::operator-=(Vec2f otherVec) {
 	m_x -= otherVec.m_x;
 	m_y -= otherVec.m_y;
 }
-Vec2f operator*(double nb, Vec2f vec) { return vec * nb; }
+
+float Vec2f::getNorm() {
+	return std::sqrtf(m_x * m_x + m_y * m_y);
+}
+
+float Vec2f::getArgument() {
+	return std::atan2(m_y, m_x);
+}
+
+Vec2f Vec2f::normalized() {
+	return (*this)/getNorm();
+}
 
 sf::Vector2f Vec2f::toSfmlVector() {
 	return sf::Vector2f(m_x, m_y);
@@ -33,4 +47,8 @@ sf::Vector2f Vec2f::toSfmlVector() {
 
 void Vec2f::draw(sf::RenderTarget& renderingSurface) {
 	renderingSurface.draw(m_shape);
+}
+
+float dotProduct(Vec2f vec1, Vec2f vec2) {
+	return vec1.m_x * vec2.m_x + vec1.m_y * vec2.m_y;
 }
