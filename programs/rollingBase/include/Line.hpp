@@ -15,7 +15,7 @@ public:
 	sf::Vertex m_shape[2];
 
 
-	Line(Vec2f direction, Vec2f p, sf::Color color = sf::Color::White);
+	Line(Vec2f direction = Vec2f(0.f, 0.f), Vec2f pVec2f = Vec2f(0.f, 0.f), sf::Color color = sf::Color::White);
 	Line(LineSegment segment, sf::Color color = sf::Color::White);
 
 	float getY(float x);

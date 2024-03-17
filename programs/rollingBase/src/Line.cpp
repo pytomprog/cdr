@@ -5,11 +5,11 @@
 #include "parameters.hpp"
 
 Line::Line(Vec2f direction, Vec2f p, sf::Color color) {
-	m_direction = direction;
+	m_direction = direction.normalized();
 	m_p = p;
 
-	m_a = direction.m_y;
-	m_b = -direction.m_x;
+	m_a = m_direction.m_y;
+	m_b = -m_direction.m_x;
 	m_c = -(m_a * p.m_x + m_b * p.m_y);
 
 	Vec2f p1, p2;

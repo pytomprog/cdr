@@ -41,12 +41,20 @@ Vec2f Vec2f::normalized() {
 	return (*this)/getNorm();
 }
 
+Vec2f Vec2f::getNearestPoint(Vec2f& otherVec1, Vec2f& otherVec2) {
+	return (getDistance(*this, otherVec1) <= getDistance(*this, otherVec2)) ? otherVec1 : otherVec2;;
+}
+
 sf::Vector2f Vec2f::toSfmlVector() {
 	return sf::Vector2f(m_x, m_y);
 }
 
 void Vec2f::draw(sf::RenderTarget& renderingSurface) {
 	renderingSurface.draw(m_shape);
+}
+
+float getDistance(Vec2f vec1, Vec2f vec2) {
+	return std::sqrtf((vec2.m_x - vec1.m_x) * (vec2.m_x - vec1.m_x) + (vec2.m_y - vec1.m_y) * (vec2.m_y - vec1.m_y));
 }
 
 float dotProduct(Vec2f vec1, Vec2f vec2) {

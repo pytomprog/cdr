@@ -23,9 +23,11 @@ public:
 	float getArgument();
 	Vec2f normalized();
 
-	sf::Vector2f toSfmlVector();
+	Vec2f getNearestPoint(Vec2f& otherVec1, Vec2f& otherVec2);
 
+	sf::Vector2f toSfmlVector();
 	void draw(sf::RenderTarget& renderingSurface);
 };
 
+float getDistance(Vec2f vec1, Vec2f vec2);
 float dotProduct(Vec2f vec1, Vec2f vec2);

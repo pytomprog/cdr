@@ -4,7 +4,7 @@
 
 #include "Line.hpp"
 
-#include <vector>
+#include <array>
 #include <SFML/Graphics.hpp>
 
 class Circle {
@@ -17,7 +17,7 @@ public:
 
 	Circle(Vec2f center, float radius, sf::Color color = sf::Color::Magenta);
 
-	std::vector<Vec2f> getPointsOfTangentLines(Vec2f p);
+	std::array<Vec2f, 2> getPointsOfTangentLines(Vec2f p);
 
 	void draw(sf::RenderTarget& renderingSurface);
 };

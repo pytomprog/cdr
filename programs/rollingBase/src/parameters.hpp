@@ -9,7 +9,8 @@ constexpr float ZOOM = 0.5f;
 constexpr float POINTS_RADIUS = 10;
 constexpr unsigned int POINTS_SHAPE_EDGES_COUNT = 30;
 
-constexpr float LINE_SEGMENT_CONTAINING_POINT_DISTANCE_THRESHOLD = 0.0001;
+constexpr float LINE_SEGMENT_CONTAINING_POINT_DISTANCE_THRESHOLD = 0.01;
+constexpr float LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD = 0.01;
 
 constexpr unsigned int CIRCLES_SHAPE_EDGES_COUNT = 100;
 constexpr float CIRCLE_OUTLINE_THICKNESS = 2.f;
