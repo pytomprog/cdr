@@ -24,7 +24,8 @@ public:
 	Vec2f normalized();
 
 	Vec2f getNearestPoint(Vec2f& otherVec1, Vec2f& otherVec2);
-
+	
+	void updatePosition();
 	sf::Vector2f toSfmlVector();
 	void draw(sf::RenderTarget& renderingSurface);
 };

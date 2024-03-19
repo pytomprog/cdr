@@ -10,7 +10,7 @@ Vec2f::Vec2f(float x, float y, sf::Color color) {
 
 	m_shape = sf::CircleShape(POINTS_RADIUS * ZOOM, POINTS_SHAPE_EDGES_COUNT);
 	m_shape.setOrigin(POINTS_RADIUS * ZOOM, POINTS_RADIUS * ZOOM);
-	m_shape.setPosition(x * ZOOM, y * ZOOM);
+	updatePosition();
 	m_shape.setFillColor(color);
 }
 
@@ -43,6 +43,10 @@ Vec2f Vec2f::normalized() {
 
 Vec2f Vec2f::getNearestPoint(Vec2f& otherVec1, Vec2f& otherVec2) {
 	return (getDistance(*this, otherVec1) <= getDistance(*this, otherVec2)) ? otherVec1 : otherVec2;;
+}
+
+void Vec2f::updatePosition() {
+	m_shape.setPosition(m_x * ZOOM, m_y * ZOOM);
 }
 
 sf::Vector2f Vec2f::toSfmlVector() {
