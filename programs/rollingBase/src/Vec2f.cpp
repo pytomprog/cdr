@@ -30,7 +30,7 @@ void Vec2f::operator-=(Vec2f otherVec) {
 }
 
 float Vec2f::getNorm() {
-	return std::sqrtf(m_x * m_x + m_y * m_y);
+	return std::sqrt(m_x * m_x + m_y * m_y);
 }
 
 float Vec2f::getArgument() {
@@ -54,7 +54,7 @@ void Vec2f::draw(sf::RenderTarget& renderingSurface) {
 }
 
 float getDistance(Vec2f vec1, Vec2f vec2) {
-	return std::sqrtf((vec2.m_x - vec1.m_x) * (vec2.m_x - vec1.m_x) + (vec2.m_y - vec1.m_y) * (vec2.m_y - vec1.m_y));
+	return std::sqrt((vec2.m_x - vec1.m_x) * (vec2.m_x - vec1.m_x) + (vec2.m_y - vec1.m_y) * (vec2.m_y - vec1.m_y));
 }
 
 float dotProduct(Vec2f vec1, Vec2f vec2) {

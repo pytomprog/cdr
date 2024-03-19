@@ -1,5 +1,7 @@
 #include "Circle.hpp"
 
+#include <cmath>
+
 #include "parameters.hpp"
 
 Circle::Circle(Vec2f center, float radius, sf::Color color) {
@@ -18,8 +20,8 @@ Circle::Circle(Vec2f center, float radius, sf::Color color) {
 std::array<Vec2f, 2> Circle::getPointsOfTangentLines(Vec2f p) {
 	float distance = (p - m_center).getNorm();
 	float arg = (p - m_center).getArgument();
-	float theta = std::acosf(1 / (distance / m_radius));
-	return std::array<Vec2f, 2> {{ m_center + Vec2f(m_radius * cosf(arg + theta), m_radius * sinf(arg + theta)), m_center + Vec2f(m_radius * cosf(arg - theta), m_radius * sinf(arg - theta)) }};
+	float theta = std::acos(1 / (distance / m_radius));
+	return std::array<Vec2f, 2> {{ m_center + Vec2f(m_radius * cos(arg + theta), m_radius * sin(arg + theta)), m_center + Vec2f(m_radius * cosf(arg - theta), m_radius * sin(arg - theta)) }};
 } 
 
 void Circle::draw(sf::RenderTarget& renderingSurface) {

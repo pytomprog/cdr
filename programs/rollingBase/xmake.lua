@@ -7,6 +7,8 @@ add_requires("sfml")
 
 set_symbols("debug")
 
+set_languages("cxx20")
+
 target("rollingBase")
     set_kind("binary")
     add_files("src/*.cpp")
