@@ -11,7 +11,7 @@ std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<
     std::vector<LineSegment> newPath(path);
     unsigned int step = 0;
     bool pathValid = false;
-    while (!pathValid) {
+    while (!pathValid && step < 100) {
         pathValid = true;
         path = newPath;
         newPath.clear();
@@ -28,7 +28,11 @@ std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<
                 Vec2f pathCollisionPoint = getCollisionPoint(lineOfSegment, perpendicularLine);
 
                 // First check if the collision point belongs to the segment and after check if circle collides with segment
-                // TODO: the collision point can do not belong to the segment and be close enough of a segment vertex, so that should trigger collision, but that's not the case 
+                // TODO: the collision point can do not belong to the segment and be close enough of a segment vertex, so that should trigger collision, but that's not the case
+                if ((LineSegment(segment.m_p1, obstacle.m_center).m_direction.getNorm() + LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD < obstacle.m_radius) ||
+                    (LineSegment(segment.m_p2, obstacle.m_center).m_direction.getNorm() + LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD < obstacle.m_radius)) {
+                    std::cerr << "Error: a segment vertex is in a circle, fix this" << std::endl;
+                }
                 if (segment.containsPoint(pathCollisionPoint) && LineSegment(pathCollisionPoint, obstacle.m_center).m_direction.getNorm() + LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD < obstacle.m_radius) {
                     std::cout << "Collision with obstacle" << std::endl;
                     pathValid = false;
