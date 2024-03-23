@@ -3,9 +3,11 @@ add_rules("mode.debug", "mode.release")
 
 add_includedirs("include", "src")
 
-add_requires("sfml")
+add_requires("sfml", "imgui-sfml")
 
 set_symbols("debug")
+
+set_languages("cxx23")
 
 target("rollingBase")
     set_kind("binary")
@@ -13,7 +15,7 @@ target("rollingBase")
     add_headerfiles("include/*.hpp")
     add_headerfiles("src/*.hpp")
 
-    add_packages("sfml")
+    add_packages("sfml", "imgui-sfml")
 
 --    after_build(function (target)
 --        os.mkdir(path.join(target:targetdir(), "assets"))

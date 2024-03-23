@@ -1,6 +1,7 @@
 #include "Line.hpp"
 
 #include <iostream>
+#include <cmath>
 
 #include "parameters.hpp"
 
@@ -73,7 +74,7 @@ void Line::draw(sf::RenderTarget& renderingSurface) {
 Vec2f getCollisionPoint(Line l1, Line l2) {
 	if (l1.m_a * l2.m_b - l1.m_b * l2.m_a == 0.f) {
 		std::cerr << "No collision point" << std::endl;
-		return Vec2f(NAN, NAN);
+		return Vec2f(std::nanf(""), std::nanf(""));
 	}
 
 	float x = (l1.m_b * l2.m_c - l1.m_c * l2.m_b) / (l1.m_a * l2.m_b - l1.m_b * l2.m_a);

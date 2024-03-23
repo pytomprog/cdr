@@ -10,7 +10,7 @@ Vec2f::Vec2f(float x, float y, sf::Color color) {
 
 	m_shape = sf::CircleShape(POINTS_RADIUS * ZOOM, POINTS_SHAPE_EDGES_COUNT);
 	m_shape.setOrigin(POINTS_RADIUS * ZOOM, POINTS_RADIUS * ZOOM);
-	m_shape.setPosition(x * ZOOM, y * ZOOM);
+	updatePosition();
 	m_shape.setFillColor(color);
 }
 
@@ -30,7 +30,7 @@ void Vec2f::operator-=(Vec2f otherVec) {
 }
 
 float Vec2f::getNorm() {
-	return std::sqrtf(m_x * m_x + m_y * m_y);
+	return std::sqrt(m_x * m_x + m_y * m_y);
 }
 
 float Vec2f::getArgument() {
@@ -45,6 +45,10 @@ Vec2f Vec2f::getNearestPoint(Vec2f& otherVec1, Vec2f& otherVec2) {
 	return (getDistance(*this, otherVec1) <= getDistance(*this, otherVec2)) ? otherVec1 : otherVec2;;
 }
 
+void Vec2f::updatePosition() {
+	m_shape.setPosition(m_x * ZOOM, m_y * ZOOM);
+}
+
 sf::Vector2f Vec2f::toSfmlVector() {
 	return sf::Vector2f(m_x, m_y);
 }
@@ -54,7 +58,7 @@ void Vec2f::draw(sf::RenderTarget& renderingSurface) {
 }
 
 float getDistance(Vec2f vec1, Vec2f vec2) {
-	return std::sqrtf((vec2.m_x - vec1.m_x) * (vec2.m_x - vec1.m_x) + (vec2.m_y - vec1.m_y) * (vec2.m_y - vec1.m_y));
+	return std::sqrt((vec2.m_x - vec1.m_x) * (vec2.m_x - vec1.m_x) + (vec2.m_y - vec1.m_y) * (vec2.m_y - vec1.m_y));
 }
 
 float dotProduct(Vec2f vec1, Vec2f vec2) {

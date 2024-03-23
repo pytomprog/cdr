@@ -18,6 +18,7 @@ public:
 	Circle(Vec2f center, float radius, sf::Color color = sf::Color::Magenta);
 
 	std::array<Vec2f, 2> getPointsOfTangentLines(Vec2f p);
-
+	
+	void updatePosition();
 	void draw(sf::RenderTarget& renderingSurface);
 };
