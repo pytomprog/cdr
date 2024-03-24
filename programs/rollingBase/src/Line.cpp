@@ -37,7 +37,9 @@ float Line::getY(float x) {
 	// a*x + b*y + c = 0 so y = -(a*x + c) / b
 
 	if (m_b == 0.f) {
+#ifdef VERBOSE
 		std::cerr << "Infinity of y values" << std::endl;
+#endif // VERBOSE
 		//return NAN;
 	}
 
@@ -48,7 +50,9 @@ float Line::getX(float y) {
 	// a*x + b*y + c = 0 so x = -(b*y + c) / a
 
 	if (m_a == 0.f) {
+#ifdef VERBOSE
 		std::cerr << "Infinity of x values" << std::endl;
+#endif // VERBOSE
 		//return NAN;
 	}
 
@@ -73,7 +77,9 @@ void Line::draw(sf::RenderTarget& renderingSurface) {
 
 Vec2f getCollisionPoint(Line l1, Line l2) {
 	if (l1.m_a * l2.m_b - l1.m_b * l2.m_a == 0.f) {
+#ifdef VERBOSE
 		std::cerr << "No collision point" << std::endl;
+#endif // VERBOSE
 		return Vec2f(std::nanf(""), std::nanf(""));
 	}
 

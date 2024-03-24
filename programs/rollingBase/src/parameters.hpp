@@ -1,5 +1,7 @@
 #pragma once
 
+#define VERBOSE
+
 constexpr float X_MIN_BORDER = 0.f, X_MAX_BORDER = 3000.f, Y_MIN_BORDER = 0.f, Y_MAX_BORDER = 2000.f;
 
 constexpr float MAX_OBSTACLE_RADIUS = 1000.f;

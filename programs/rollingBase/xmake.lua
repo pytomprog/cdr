@@ -7,7 +7,9 @@ add_requires("sfml", "imgui-sfml")
 
 set_symbols("debug")
 
-set_languages("cxx23")
+set_languages("clatest", "cxxlatest")
+
+set_optimize("fastest")
 
 target("rollingBase")
     set_kind("binary")

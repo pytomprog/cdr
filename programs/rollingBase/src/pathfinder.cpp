@@ -1,12 +1,15 @@
 #include "pathfinder.hpp"
 
-#include <iostream>
 #include <vector>
 #include <array>
+#include <iostream>
+#include <chrono>
 
 #include "parameters.hpp"
 
 std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<Circle> obstacles) {
+    auto startTime = std::chrono::high_resolution_clock::now();
+    
     std::vector<LineSegment> path{ LineSegment(startPoint, endPoint)};
     std::vector<LineSegment> newPath(path);
     unsigned int step = 0;
@@ -15,8 +18,10 @@ std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<
         pathValid = true;
         path = newPath;
         newPath.clear();
-        std::cout << "================ Step " << step << "================" << std::endl;
 
+#ifdef VERBOSE
+        std::cout << "================ Step " << step << "================" << std::endl;
+#endif // VERBOSE
         for (int segmentIndex = 0; segmentIndex < path.size(); segmentIndex++) {
             LineSegment segment = path[segmentIndex];
             Line lineOfSegment(segment);
@@ -31,10 +36,14 @@ std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<
                 // TODO: the collision point can do not belong to the segment and be close enough of a segment vertex, so that should trigger collision, but that's not the case
                 if ((LineSegment(segment.m_p1, obstacle.m_center).m_direction.getNorm() + LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD < obstacle.m_radius) ||
                     (LineSegment(segment.m_p2, obstacle.m_center).m_direction.getNorm() + LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD < obstacle.m_radius)) {
+#ifdef VERBOSE
                     std::cerr << "Error: a segment vertex is in a circle, fix this" << std::endl;
+#endif // VERBOSE
                 }
                 if (segment.containsPoint(pathCollisionPoint) && LineSegment(pathCollisionPoint, obstacle.m_center).m_direction.getNorm() + LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD < obstacle.m_radius) {
+#ifdef VERBOSE
                     std::cout << "Collision with obstacle" << std::endl;
+#endif // VERBOSE
                     pathValid = false;
                     segmentValid = false;
 
@@ -71,7 +80,9 @@ std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<
                 newPath.push_back(segment);
             } else {
                 if (segmentIndex != path.size() - 1) {
+#ifdef VERBOSE
                     std::cout << "Not the last segment so add last segments to new path" << std::endl;
+#endif // VERBOSE
                     for (segmentIndex += 1; segmentIndex < path.size(); segmentIndex++) {
                         newPath.push_back(path[segmentIndex]);
                     }
@@ -81,6 +92,9 @@ std::vector<LineSegment> findPath(Vec2f startPoint, Vec2f endPoint, std::vector<
         }
         step += 1;
     }
+
+    auto endTime = std::chrono::high_resolution_clock::now();
+    std::cout << "Pathfinding took " << (std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime)).count() << " microseconds." << std::endl;
 
     return path;
 }
