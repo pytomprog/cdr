@@ -1,4 +1,4 @@
-#include "DebugGui.hpp"
+#include "pathfinding/DebugGui.hpp"
 
 #include <vector>
 #include <string>
@@ -7,7 +7,7 @@
 #include <imgui-SFML.h>
 
 #include "parameters.hpp"
-#include "pathfinder.hpp"
+#include "pathfinding/pathfinder.hpp"
 
 void DebugGui::update(sf::RenderWindow& window, Vec2f& startPoint, Vec2f& endPoint, std::vector<LineSegment>& path, std::vector<Circle>& obstacles) {
     ImGui::SFML::Update(window, m_deltaClock.restart());

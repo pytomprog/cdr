@@ -11,11 +11,16 @@ set_languages("clatest", "cxxlatest")
 
 set_optimize("fastest")
 
-target("rollingBase")
+target("pathfinding")
     set_kind("binary")
-    add_files("src/*.cpp")
-    add_headerfiles("include/*.hpp")
-    add_headerfiles("src/*.hpp")
+
+    add_files("src/pathfinding/**.cpp")
+    add_headerfiles("include/pathfinding/**.hpp")
+    add_headerfiles("src/pathfinding/**.hpp")
+
+    add_files("src/common/**.cpp")
+    add_headerfiles("include/common/**.hpp")
+    add_headerfiles("src/common/**.hpp")
 
     add_packages("sfml", "imgui-sfml")
 

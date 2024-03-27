@@ -3,9 +3,9 @@
 #include <SFML/Window.hpp>
 #include <SFML/System/Clock.hpp>
 
-#include "Vec2f.hpp"
-#include "LineSegment.hpp"
-#include "Circle.hpp"
+#include "common/Vec2f.hpp"
+#include "common/LineSegment.hpp"
+#include "common/Circle.hpp"
 
 struct Color4f {
     // [0-255]

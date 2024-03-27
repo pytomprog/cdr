@@ -8,12 +8,12 @@
 #include <imgui-SFML.h>
 
 #include "parameters.hpp"
-#include "Vec2f.hpp"
-#include "Line.hpp"
-#include "LineSegment.hpp"
-#include "Circle.hpp"
-#include "pathfinder.hpp"
-#include "DebugGui.hpp"
+#include "common/Vec2f.hpp"
+#include "common/Line.hpp"
+#include "common/LineSegment.hpp"
+#include "common/Circle.hpp"
+#include "pathfinding/pathfinder.hpp"
+#include "pathfinding/DebugGui.hpp"
 
 int main() {
     sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Pathfinding");

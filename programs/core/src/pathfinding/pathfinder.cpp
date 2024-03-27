@@ -1,4 +1,4 @@
-#include "pathfinder.hpp"
+#include "pathfinding/pathfinder.hpp"
 
 #include <vector>
 #include <array>
