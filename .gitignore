@@ -1,4 +1,5 @@
 .xmake/
+.vs/
 
 # Prerequisites
 *.d

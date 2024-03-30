@@ -1,4 +1,4 @@
-#include "common/LineSegment.hpp"
+#include "maths/LineSegment.hpp"
 
 #include "cmath"
 

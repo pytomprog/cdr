@@ -10,15 +10,17 @@
 class Circle {
 public:
 	Vec2f m_center;
-	float m_radius;
+	float m_selfRadius;
+	float m_collisionRadius;
 
-	sf::CircleShape m_shape;
+	sf::CircleShape m_selfShape;
+	sf::CircleShape m_collisionShape;
 
 
-	Circle(Vec2f center, float radius, sf::Color color = sf::Color::Magenta);
+	Circle(Vec2f center, float radius, float robotRadius, sf::Color color = sf::Color::Magenta);
 
 	std::array<Vec2f, 2> getPointsOfTangentLines(Vec2f p);
 	
-	void updatePosition();
+	void update(float robotRadius);
 	void draw(sf::RenderTarget& renderingSurface);
 };

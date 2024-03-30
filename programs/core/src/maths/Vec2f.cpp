@@ -1,4 +1,4 @@
-#include "common/Vec2f.hpp"
+#include "maths/Vec2f.hpp"
 
 #include <cmath>
 

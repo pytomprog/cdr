@@ -1,4 +1,4 @@
-#include "common/Line.hpp"
+#include "maths/Line.hpp"
 
 #include <iostream>
 #include <cmath>

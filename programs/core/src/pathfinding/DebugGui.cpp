@@ -9,7 +9,7 @@
 #include "parameters.hpp"
 #include "pathfinding/pathfinder.hpp"
 
-void DebugGui::update(sf::RenderWindow& window, Vec2f& startPoint, Vec2f& endPoint, std::vector<LineSegment>& path, std::vector<Circle>& obstacles) {
+void DebugGui::update(sf::RenderWindow& window, Vec2f& startPoint, Vec2f& endPoint, float& robotRadius, std::vector<LineSegment>& path, std::vector<Circle>& obstacles) {
     ImGui::SFML::Update(window, m_deltaClock.restart());
 
 	//ImGui::ShowDemoWindow();
@@ -27,10 +27,11 @@ void DebugGui::update(sf::RenderWindow& window, Vec2f& startPoint, Vec2f& endPoi
 	
 	
 	ImGui::Begin("Obstacles");
+	ImGui::SliderFloat("Robot radius", &robotRadius, 0, 300);
 	ImGui::ColorEdit4("Obstacles Color", &m_obstaclesColor.r);
 	
 	if (ImGui::Button("Add obstacle")) {
-		obstacles.push_back(Circle(Vec2f(100.f, 100.f, sf::Color::Magenta), 100.f));
+		obstacles.push_back(Circle(Vec2f(100.f, 100.f, sf::Color::Magenta), 100.f, robotRadius));
 	}
 	
 	if (ImGui::BeginTable("##split", 2, ImGuiTableFlags_BordersOuter | ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY)) {
@@ -70,7 +71,7 @@ void DebugGui::update(sf::RenderWindow& window, Vec2f& startPoint, Vec2f& endPoi
 							ImGui::SliderFloat("##value", &obstacles[uid].m_center.m_y, Y_MIN_BORDER, Y_MAX_BORDER);
 							break;
 						case 2:
-							ImGui::SliderFloat("##value", &obstacles[uid].m_radius, 0, MAX_OBSTACLE_RADIUS);
+							ImGui::SliderFloat("##value", &obstacles[uid].m_selfRadius, 0, MAX_OBSTACLE_RADIUS);
 							break;
 					}
 					

@@ -18,9 +18,11 @@ target("pathfinding")
     add_headerfiles("include/pathfinding/**.hpp")
     add_headerfiles("src/pathfinding/**.hpp")
 
-    add_files("src/common/**.cpp")
-    add_headerfiles("include/common/**.hpp")
-    add_headerfiles("src/common/**.hpp")
+    add_files("src/maths/**.cpp")
+    add_headerfiles("include/maths/**.hpp")
+    add_headerfiles("src/maths/**.hpp")
+
+    add_headerfiles("src/parameters.hpp")
 
     add_packages("sfml", "imgui-sfml")
 
