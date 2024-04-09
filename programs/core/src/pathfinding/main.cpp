@@ -64,7 +64,7 @@ int main() {
 
         window.clear();
         for (Circle& obstacle : obstacles) {
-			obstacle.m_selfShape.setOutlineColor(sf::Color(uint8_t(255*debugGui.m_obstaclesColor.r), uint8_t(255*debugGui.m_obstaclesColor.g), uint8_t(255*debugGui.m_obstaclesColor.b), uint8_t(255*debugGui.m_obstaclesColor.a)));
+			obstacle.m_selfShape.setFillColor(sf::Color(uint8_t(255*debugGui.m_obstaclesColor.r), uint8_t(255*debugGui.m_obstaclesColor.g), uint8_t(255*debugGui.m_obstaclesColor.b), uint8_t(255*debugGui.m_obstaclesColor.a)));
 			obstacle.m_collisionShape.setOutlineColor(sf::Color(uint8_t(255*debugGui.m_obstaclesColor.r), uint8_t(255*debugGui.m_obstaclesColor.g), uint8_t(255*debugGui.m_obstaclesColor.b), uint8_t(255*debugGui.m_obstaclesColor.a)));
             obstacle.draw(window);
         }

@@ -26,6 +26,22 @@ target("pathfinding")
 
     add_packages("sfml", "imgui-sfml")
 
+target("hal")
+    set_kind("binary")
+
+    add_files("src/hal/**.cpp")
+    add_headerfiles("include/hal/**.hpp")
+    add_headerfiles("src/hal/**.hpp")
+
+    add_files("src/maths/**.cpp")
+    add_headerfiles("include/maths/**.hpp")
+    add_headerfiles("src/maths/**.hpp")
+
+    add_headerfiles("src/parameters.hpp")
+
+    add_packages("sfml", "imgui-sfml")
+
+
 --    after_build(function (target)
 --        os.mkdir(path.join(target:targetdir(), "assets"))
 --        os.cp("assets/*", path.join(target:targetdir(), "assets"))
