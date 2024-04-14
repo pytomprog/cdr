@@ -18,11 +18,11 @@ target("pathfinding")
     add_headerfiles("include/pathfinding/**.hpp")
     add_headerfiles("src/pathfinding/**.hpp")
 
+    add_headerfiles("src/parameters.hpp")
+
     add_files("src/maths/**.cpp")
     add_headerfiles("include/maths/**.hpp")
     add_headerfiles("src/maths/**.hpp")
-
-    add_headerfiles("src/parameters.hpp")
 
     add_packages("sfml", "imgui-sfml")
 
@@ -33,13 +33,46 @@ target("hal")
     add_headerfiles("include/hal/**.hpp")
     add_headerfiles("src/hal/**.hpp")
 
+    add_headerfiles("src/parameters.hpp")
+
     add_files("src/maths/**.cpp")
     add_headerfiles("include/maths/**.hpp")
     add_headerfiles("src/maths/**.hpp")
 
+    add_packages("sfml", "imgui-sfml")
+
+target("core")
+    set_kind("binary")
+
+    add_files("src/core/**.cpp")
+    add_headerfiles("include/core/**.hpp")
+    add_headerfiles("src/core/**.hpp")
+
     add_headerfiles("src/parameters.hpp")
 
+    add_files("src/maths/**.cpp")
+    add_headerfiles("include/maths/**.hpp")
+    add_headerfiles("src/maths/**.hpp")
+
+    add_files("src/world/**.cpp")
+    add_headerfiles("include/world/**.hpp")
+    add_headerfiles("src/world/**.hpp")
+
+    add_files("src/gui/**.cpp")
+    add_headerfiles("include/gui/**.hpp")
+    add_headerfiles("src/gui/**.hpp")
+
+    add_files("src/hal/**.cpp")
+    add_headerfiles("include/hal/**.hpp")
+    add_headerfiles("src/hal/**.hpp")
+    remove_files("src/hal/main.cpp")
+
     add_packages("sfml", "imgui-sfml")
+
+    set_policy("build.sanitizer.thread", true) -- Enable thread sanitizer to detect data races
+    add_cxflags("-fsanitize=thread", "-ftrapv")
+    add_mxflags("-fsanitize=thread", "-ftrapv")
+    add_ldflags("-fsanitize=thread")
 
 
 --    after_build(function (target)

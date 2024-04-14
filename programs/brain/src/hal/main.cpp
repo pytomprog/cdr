@@ -43,7 +43,7 @@ int main() {
 
         hal.m_ownRobot.m_currentPose.update();
         hal.m_ownRobot.m_currentPose.draw(window);
-        if (hal.m_config.rollingBaseConnected) {
+        if (hal.m_ownRobot.m_periphericalsConfig.rollingBaseConnected) {
             hal.m_ownRobot.m_targetPose.update();
             hal.m_ownRobot.m_targetPose.draw(window);
         }

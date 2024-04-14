@@ -1,24 +1,10 @@
 #pragma once
 
-#include "hal/robot/Robot.hpp"
-
-struct HardwareAbstractionLayerConfig {
-	bool cameraConnected;
-	bool rollingBaseConnected;
-	bool armConnected;
-};
+#include "world/World.hpp"
 
 class HardwareAbstractionLayer {
 public:
-	Robot m_ownRobot;
+	World& m_world;
 
-	HardwareAbstractionLayerConfig m_config;
-
-	HardwareAbstractionLayer(Robot const& robot);
-
-	void updateConfig();
-
-	void cameraRoutine();
-	void rollingBaseRoutine();
-	void armRoutine();
+	HardwareAbstractionLayer(World& world);
 };
