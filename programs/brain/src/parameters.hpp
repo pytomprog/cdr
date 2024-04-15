@@ -1,5 +1,7 @@
 #pragma once
 
+#include "hal/bcm2835.h"
+
 //===================== General parameters =====================
 
 #define VERBOSE
@@ -23,7 +25,10 @@ constexpr float CIRCLE_OUTLINE_THICKNESS = 2.f;
 
 //======================= HAL parameters =======================
 
+uint16_t I2C_CLOCK_DIVIDER_VALUE = BCM2835_I2C_CLOCK_DIVIDER_148;
+constexpr unsigned int MAX_I2C_FRAME_LEN = 32;
 
+uint8_t I2C_ROLLING_BASE_ADDRESS = 0x01;
 
 //=================== Pathfinding parameters ===================
 

@@ -7,30 +7,37 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
-#include <vector>
 
 #include "parameters.hpp"
 #include "gui/gui.hpp"
 #include "hal/HardwareAbstractionLayer.hpp"
+#include "hal/bcm2835.h"
 
 //std::mutex halMutex;
 
-std::vector<std::thread> testThreads;
-
 void halLoop(HardwareAbstractionLayer& hal) {
     using namespace std::chrono_literals;
+    if (!bcm2835_init()) {
+        std::cout << "bcm2835_init failed. Are you running as root??" << std::endl;
+        return;
+    }
+    if (!bcm2835_i2c_begin()) {
+        std::cout << "bcm2835_i2c_begin failed. Are you running as root??" << std::endl;
+        return;
+    }
+
+    bcm2835_i2c_setClockDivider(I2C_CLOCK_DIVIDER_VALUE);
+
     while (true) {
         //halMutex.lock();
-        static int direction = 1;
-        Pose2f oldPose = hal.m_world.m_ownRobot.m_currentPose;
-        if (oldPose.m_position.m_x < X_MIN_BORDER || oldPose.m_position.m_x > X_MAX_BORDER) {
-            direction *= -1;
-        }
-        Pose2f newPose = Pose2f(oldPose.m_position + Vec2f(direction*0.01, 0), oldPose.m_orientation);
-        hal.m_world.m_ownRobot.m_currentPose = newPose;
+        hal.ownRobotRollingBaseRoutine();
         //halMutex.unlock();
         //std::this_thread::sleep_for(100ms);
     }
+
+    bcm2835_i2c_end();
+
+    bcm2835_close();
 }
 
 int main() {
@@ -46,9 +53,6 @@ int main() {
     GraphicalUserInterface gui(window, world);
 
     std::thread halThread(halLoop, std::ref(hal));
-    for (int i = 0; i < 100; i++) {
-        testThreads.push_back(std::thread(halLoop, std::ref(hal)));
-    }
 
     while (window.isOpen()) {
         sf::Event event;
@@ -74,9 +78,6 @@ int main() {
     }
 
     halThread.join();
-    for (int i = 0; i < 100; i++) {
-        testThreads[i].join();
-    }
 
     ImGui::SFML::Shutdown();
 

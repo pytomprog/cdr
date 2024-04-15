@@ -7,4 +7,6 @@ public:
 	World& m_world;
 
 	HardwareAbstractionLayer(World& world);
+
+	void ownRobotRollingBaseRoutine();
 };

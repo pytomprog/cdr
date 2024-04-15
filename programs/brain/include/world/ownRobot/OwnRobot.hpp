@@ -8,12 +8,23 @@ struct OwnRobotPeriphericalsConfig {
 	bool armConnected;
 };
 
+enum OwnRobotRollingBaseMode {
+	INDIVIDUAL_MOTOR_SPEEDS_CONTROL,
+	DX_DY_DTHETA_CONTROL
+};
+
 class OwnRobot {
 public:
-	Pose2f m_currentPose;
-	Pose2f m_targetPose = Pose2f(Vec2f(0.f, 0.f, sf::Color::Red), 0.f);
-
 	OwnRobotPeriphericalsConfig m_periphericalsConfig;
+
+	Pose2f m_currentPose;
+	Pose2f m_targetPose;
+
+	OwnRobotRollingBaseMode m_ownRobotRollingBaseMode;
+	bool m_motorsEnabled;
+	int m_motor1TargetSpeedPercentage;
+	int m_motor2TargetSpeedPercentage;
+	int m_motor3TargetSpeedPercentage;
 
 	//Arm arm;
 

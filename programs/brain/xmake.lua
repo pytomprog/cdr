@@ -32,6 +32,9 @@ target("hal")
     add_files("src/hal/**.cpp")
     add_headerfiles("include/hal/**.hpp")
     add_headerfiles("src/hal/**.hpp")
+    add_files("src/hal/**.c")
+    add_headerfiles("include/hal/**.h")
+    add_headerfiles("src/hal/**.hpp")
 
     add_headerfiles("src/parameters.hpp")
 
@@ -64,6 +67,9 @@ target("core")
 
     add_files("src/hal/**.cpp")
     add_headerfiles("include/hal/**.hpp")
+    add_headerfiles("src/hal/**.hpp")
+    add_files("src/hal/**.c")
+    add_headerfiles("include/hal/**.h")
     add_headerfiles("src/hal/**.hpp")
     remove_files("src/hal/main.cpp")
 
