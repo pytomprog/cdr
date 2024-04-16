@@ -32,7 +32,7 @@ void halLoop(HardwareAbstractionLayer& hal) {
         //halMutex.lock();
         hal.ownRobotRollingBaseRoutine();
         //halMutex.unlock();
-        //std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(20ms);
     }
 
     bcm2835_i2c_end();

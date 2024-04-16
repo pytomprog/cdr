@@ -10,4 +10,7 @@ OwnRobot::OwnRobot(Pose2f initialPose) {
 	m_motor1TargetSpeedPercentage = 0;
 	m_motor2TargetSpeedPercentage = 0;
 	m_motor3TargetSpeedPercentage = 0;
+	m_dXTarget = 0;
+	m_dYTarget = 0;
+	m_dThetaTarget = 0;
 }

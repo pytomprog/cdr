@@ -2,6 +2,8 @@
 
 #include <imgui.h>
 #include <imgui-SFML.h>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Joystick.hpp>
 
 #include "parameters.hpp"
 
@@ -40,31 +42,50 @@ void GraphicalUserInterface::ownRobotCameraRoutine() {
 }
 
 void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
+	static bool gamepadEnabled = false;
 	static int mode = 0;
 	const char* modesList[] =
 	{
 		"Individual motor speeds control",
 		"dx dy dtheta control",
+		"Position control"
 	};
 	
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Rolling base", 0, ImGuiWindowFlags_AlwaysAutoResize);
 	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected) {
 		ImGui::Checkbox("Enable motors", &m_world.m_ownRobot.m_motorsEnabled);
-		ImGui::Combo("Mods", &mode, modesList, IM_ARRAYSIZE(modesList));
+		ImGui::Combo("Modes", &mode, modesList, IM_ARRAYSIZE(modesList));
 		m_world.m_ownRobot.m_ownRobotRollingBaseMode = OwnRobotRollingBaseMode(mode);
 		switch (m_world.m_ownRobot.m_ownRobotRollingBaseMode) {
 			case INDIVIDUAL_MOTOR_SPEEDS_CONTROL:
 				ImGui::SliderInt("Motor 1 target speed", &m_world.m_ownRobot.m_motor1TargetSpeedPercentage, -100, 100);
 				ImGui::SliderInt("Motor 2 target speed", &m_world.m_ownRobot.m_motor2TargetSpeedPercentage, -100, 100);
 				ImGui::SliderInt("Motor 3 target speed", &m_world.m_ownRobot.m_motor3TargetSpeedPercentage, -100, 100);
-				if (ImGui::Button("Stop")) {
+				if (ImGui::Button("Stop") || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 					m_world.m_ownRobot.m_motor1TargetSpeedPercentage = 0;
 					m_world.m_ownRobot.m_motor2TargetSpeedPercentage = 0;
 					m_world.m_ownRobot.m_motor3TargetSpeedPercentage = 0;
 				}
 				break;
 			case DX_DY_DTHETA_CONTROL:
+				ImGui::Checkbox("Enable gamepad", &gamepadEnabled);
+				if (gamepadEnabled){
+					m_world.m_ownRobot.m_dXTarget = sf::Joystick::getAxisPosition(0, sf::Joystick::V);
+					m_world.m_ownRobot.m_dYTarget = sf::Joystick::getAxisPosition(0, sf::Joystick::U);
+					m_world.m_ownRobot.m_dThetaTarget = sf::Joystick::getAxisPosition(0, sf::Joystick::X);
+				}
+				ImGui::SliderInt("Taget dX", &m_world.m_ownRobot.m_dXTarget, -100, 100);
+				ImGui::SliderInt("Target dY", &m_world.m_ownRobot.m_dYTarget, -100, 100);
+				ImGui::SliderInt("Target dTheta", &m_world.m_ownRobot.m_dThetaTarget, -100, 100);
+				if (ImGui::Button("Stop") || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+					m_world.m_ownRobot.m_dXTarget = 0;
+					m_world.m_ownRobot.m_dYTarget = 0;
+					m_world.m_ownRobot.m_dThetaTarget = 0;
+				}
+
+				break;
+			case POSE_CONTROL:
 				ImGui::SliderFloat("Taget X", &m_world.m_ownRobot.m_targetPose.m_position.m_x, X_MIN_BORDER, X_MAX_BORDER, "%.1f");
 				ImGui::SliderFloat("Target Y", &m_world.m_ownRobot.m_targetPose.m_position.m_y, Y_MIN_BORDER, Y_MAX_BORDER, "%.1f");
 				ImGui::SliderFloat("Target Theta", &m_world.m_ownRobot.m_targetPose.m_orientation, 0, 2 * PI);

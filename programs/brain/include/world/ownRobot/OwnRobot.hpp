@@ -10,7 +10,8 @@ struct OwnRobotPeriphericalsConfig {
 
 enum OwnRobotRollingBaseMode {
 	INDIVIDUAL_MOTOR_SPEEDS_CONTROL,
-	DX_DY_DTHETA_CONTROL
+	DX_DY_DTHETA_CONTROL,
+	POSE_CONTROL,
 };
 
 class OwnRobot {
@@ -25,6 +26,9 @@ public:
 	int m_motor1TargetSpeedPercentage;
 	int m_motor2TargetSpeedPercentage;
 	int m_motor3TargetSpeedPercentage;
+	int m_dXTarget;
+	int m_dYTarget;
+	int m_dThetaTarget;
 
 	//Arm arm;
 
