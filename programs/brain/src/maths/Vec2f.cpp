@@ -46,11 +46,11 @@ Vec2f Vec2f::getNearestPoint(Vec2f& otherVec1, Vec2f& otherVec2) {
 }
 
 void Vec2f::updatePosition() {
-	m_shape.setPosition(m_x * ZOOM, m_y * ZOOM);
+	m_shape.setPosition(m_x * ZOOM, (Y_MAX_BORDER - m_y) * ZOOM);
 }
 
 sf::Vector2f Vec2f::toSfmlVector() {
-	return sf::Vector2f(m_x, m_y);
+	return sf::Vector2f(m_x * ZOOM, (Y_MAX_BORDER - m_y) * ZOOM);
 }
 
 void Vec2f::draw(sf::RenderTarget& renderingSurface) {

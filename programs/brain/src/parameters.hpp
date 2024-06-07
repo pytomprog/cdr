@@ -24,11 +24,18 @@ constexpr float LINE_SEGMENT_CIRCLE_COLLISION_DISTANCE_THRESHOLD = 0.01f;
 constexpr unsigned int CIRCLES_SHAPE_EDGES_COUNT = 100u;
 constexpr float CIRCLE_OUTLINE_THICKNESS = 2.f;
 
+#define PIN_TIRRETE 15
+
+#define MAX_STRATEGIES_NB 256
+
 //======================= HAL parameters =======================
 
 #define I2C_CLOCK_DIVIDER_VALUE BCM2835_I2C_CLOCK_DIVIDER_2500 //BCM2835_I2C_CLOCK_DIVIDER_148 too fast without pullup resistors (and with ?)
 
 #define I2C_ROLLING_BASE_ADDRESS 0x10
+
+#define I2C_ARM_1_ADDRESS 0x11
+#define I2C_ARM_2_ADDRESS 0x12
 
 //=================== Pathfinding parameters ===================
 

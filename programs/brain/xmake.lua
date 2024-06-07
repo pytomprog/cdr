@@ -73,12 +73,16 @@ target("core")
     add_headerfiles("src/hal/**.hpp")
     remove_files("src/hal/main.cpp")
 
+    add_files("src/strategy/**.cpp")
+    add_headerfiles("include/strategy/**.hpp")
+    add_headerfiles("src/strategy/**.hpp")
+
     add_packages("sfml", "imgui-sfml")
 
-    set_policy("build.sanitizer.thread", true) -- Enable thread sanitizer to detect data races
-    add_cxflags("-fsanitize=thread", "-ftrapv")
-    add_mxflags("-fsanitize=thread", "-ftrapv")
-    add_ldflags("-fsanitize=thread")
+    --set_policy("build.sanitizer.thread", true) -- Enable thread sanitizer to detect data races
+    --add_cxflags("-fsanitize=thread", "-ftrapv")
+    --add_mxflags("-fsanitize=thread", "-ftrapv")
+    --add_ldflags("-fsanitize=thread")
 
 
 --    after_build(function (target)
