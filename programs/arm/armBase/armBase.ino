@@ -8,6 +8,8 @@
 #define MAX_SEQUENCE_LENGTH 32
 #define MAX_QUEUE_LENGTH 32
 
+//#define SERIAL_ENABLED
+
 struct Command {
   int index;
   int argument;
@@ -23,6 +25,9 @@ int memorizedPositions[][3] = {{0, 0, 0}, {180, 180, 180}, {90, 90, 90}};
 Sequence memorizedSequences[] = {Sequence{4, {Command{4, 0}, Command{0, 5}, Command{4, 1}, Command{0, 5}}},
                                  Sequence{4, {Command{5, 0}, Command{5, 0}, Command{5, 0}, Command{5, 0}}},};
 
+Command immediateCommand;
+bool isImmediateCommand;
+
 int commandQueueLength = 0;
 Command commandQueue[MAX_QUEUE_LENGTH]; 
 
@@ -33,6 +38,8 @@ Servo servo2;
 Servo servo3;
 
 void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
+
   servo1.attach(SERVO1_PIN);
   servo2.attach(SERVO2_PIN);
   servo3.attach(SERVO3_PIN);
@@ -43,35 +50,49 @@ void setup() {
 }
 
 void loop() {
-  if (commandQueueLength > 0) {
+  if (isImmediateCommand) {
+    isImmediateCommand = false;
+    executeCommand(immediateCommand);
+  } else if (commandQueueLength > 0) {
     executeCommand(deleteFirstCommandFromQueue());
   }
 }
 
 void i2cReceiverHandler(int howMany) {
-  Serial.println("Receiving data:");
+  digitalWrite(LED_BUILTIN, HIGH);
+  #ifdef SERIAL_ENABLED
+    Serial.println("Receiving data:");
+  #endif //SERIAL_ENABLED
   while (Wire.available() > 0) {
     byte data = Wire.read();
     bool immediate = data>>7;
     int index = (data & 0b01110000) >> 4;
     int argument = data & 0b00001111;
          
-    Serial.println("\t" +
-                 byteToString(data) + 
-                 ", imediate command: " + immediate +
-                 ", index: " + index +
-                 ", argument: " + argument);
+    #ifdef SERIAL_ENABLED
+      Serial.println("\t" +
+                      byteToString(data) + 
+                      ", imediate command: " + immediate +
+                      ", index: " + index +
+                      ", argument: " + argument);
+    #endif //SERIAL_ENABLED
 
     stopped = false;
 
     if (immediate) {
-      executeCommand(Command{index, argument});
+      immediateCommand = Command{index, argument};
+      isImmediateCommand = true;
     } else {
       addCommandToQueue(Command{index, argument});
     }
-    Serial.println();
+    #ifdef SERIAL_ENABLED
+      Serial.println();
+    #endif //SERIAL_ENABLED
   }
-  Serial.println();
+  #ifdef SERIAL_ENABLED
+    Serial.println();
+  #endif //SERIAL_ENABLED
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 String byteToString(byte b) {
@@ -106,7 +127,9 @@ void executeCommand(Command command) {
     int index = command.index;
     int argument = command.argument;
 
-    Serial.println("Executing command: index: " + String(index) + ", argument: " + String(argument));
+    #ifdef SERIAL_ENABLED
+      Serial.println("Executing command: index: " + String(index) + ", argument: " + String(argument));
+    #endif //SERIAL_ENABLED
 
     switch (index) {
       case 0: //stop
@@ -132,7 +155,9 @@ void executeCommand(Command command) {
         servo3.write(memorizedPositions[argument][2]);
         break;
       case 5:
-        Serial.println("Playing sequence " + String(argument));
+        #ifdef SERIAL_ENABLED
+          Serial.println("Playing sequence " + String(argument));
+        #endif //SERIAL_ENABLED
         playSequence(memorizedSequences[argument]);
         break;
       case 6:
@@ -144,7 +169,9 @@ void executeCommand(Command command) {
 }
 
 void playSequence(Sequence sequence){
-  Serial.println("Sequence size: " + String(sequence.length));
+  #ifdef SERIAL_ENABLED
+    Serial.println("Sequence size: " + String(sequence.length));
+  #endif //SERIAL_ENABLED
   for (int step = 0; step<sequence.length; step++){
     executeCommand(sequence.steps[step]);
   }
