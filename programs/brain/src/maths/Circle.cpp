@@ -11,12 +11,12 @@ Circle::Circle(Vec2f center, float selfRadius, float robotRadius, sf::Color colo
 
 	m_selfShape = sf::CircleShape(m_collisionRadius * ZOOM, CIRCLES_SHAPE_EDGES_COUNT);
 	m_selfShape.setOrigin(m_collisionRadius * ZOOM, m_collisionRadius * ZOOM);
-	m_selfShape.setPosition((center * ZOOM).toSfmlVector());
+	m_selfShape.setPosition(center.toSfmlVector());
 	m_selfShape.setFillColor(color);
 
 	m_collisionShape = sf::CircleShape(m_selfRadius * ZOOM - CIRCLE_OUTLINE_THICKNESS, CIRCLES_SHAPE_EDGES_COUNT);
 	m_collisionShape.setOrigin(m_selfRadius * ZOOM - CIRCLE_OUTLINE_THICKNESS, m_selfRadius * ZOOM - CIRCLE_OUTLINE_THICKNESS);
-	m_collisionShape.setPosition((center * ZOOM).toSfmlVector());
+	m_collisionShape.setPosition(center.toSfmlVector());
 	m_collisionShape.setFillColor(sf::Color::Transparent);
 	m_collisionShape.setOutlineThickness(CIRCLE_OUTLINE_THICKNESS);
 	m_collisionShape.setOutlineColor(color);

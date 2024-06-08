@@ -7,11 +7,15 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "parameters.hpp"
 #include "gui/gui.hpp"
 #include "hal/HardwareAbstractionLayer.hpp"
 #include "hal/bcm2835.h"
+#include "strategy/strategies.hpp"
 
 //std::mutex halMutex;
 
@@ -30,9 +34,11 @@ void halLoop(HardwareAbstractionLayer& hal) {
 
     while (true) {
         //halMutex.lock();
+        hal.ownRobotCameraRoutine();
         hal.ownRobotRollingBaseRoutine();
+        hal.ownRobotArmRoutine();
         //halMutex.unlock();
-        //std::this_thread::sleep_for(100ms);
+        //std::this_thread::sleep_for(20ms);
     }
 
     bcm2835_i2c_end();
@@ -46,11 +52,16 @@ int main() {
 
     sf::Clock deltaClock;
 
-    OwnRobot ownRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Green), 0.f));
-    World world(ownRobot);
+    OwnRobot ownRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Green), 0.f), 200.f, true);
+    Obstacle advRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Yellow), 0.f), 500.f);
+    World world(STRATEGY_MODE, "Yellow homologation", ownRobot, advRobot);
+
+    std::map<std::string, Strategy*> strategies;
+    std::vector<std::string> strategiesNames;
+    initStrategies(strategies, strategiesNames, world);
 
     HardwareAbstractionLayer hal(world);
-    GraphicalUserInterface gui(window, world);
+    GraphicalUserInterface gui(window, world, strategiesNames);
 
     std::thread halThread(halLoop, std::ref(hal));
 
@@ -66,6 +77,10 @@ int main() {
 
         ImGui::SFML::Update(window, deltaClock.restart());
         window.clear();
+
+        if (world.m_runningMode == STRATEGY_MODE) {
+            strategies[world.m_strategyName]->routine();
+        }
 
         //ImGui::ShowDemoWindow();
 

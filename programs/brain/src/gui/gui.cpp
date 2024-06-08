@@ -2,22 +2,66 @@
 
 #include <imgui.h>
 #include <imgui-SFML.h>
+#include <SFML/Window/Keyboard.hpp>
+#include <SFML/Window/Joystick.hpp>
+#include <iostream>
 
 #include "parameters.hpp"
 
-GraphicalUserInterface::GraphicalUserInterface(sf::RenderWindow& window, World& world): m_window(window), m_world(world) {
-
+GraphicalUserInterface::GraphicalUserInterface(sf::RenderWindow& window, World& world, std::vector<std::string> strategiesNames): m_window(window), m_world(world) {
+	m_strategiesNames = strategiesNames;
+	for (size_t strategyIndex = 0; strategyIndex < strategiesNames.size(); strategyIndex++) {
+		m_strategiesNamesCharPtr[strategyIndex] = m_strategiesNames[strategyIndex].c_str();
+	}
 }
 
-void GraphicalUserInterface::ownRobotPeriphericalsConfigRoutine() {
-    ImGui::Begin("HAL configuration");
+void GraphicalUserInterface::homeMenuConfig() {
+	const char* runningModesList[] =
+	{
+		"Test mode",
+		"Strategy mode"
+	};
+	
+	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
+	ImGui::Begin("Home menu", 0, ImGuiWindowFlags_AlwaysAutoResize);
+	static int runningModeChoice = m_world.m_runningMode;
+	ImGui::Combo("Running mode", &runningModeChoice, runningModesList, IM_ARRAYSIZE(runningModesList));
+	RunningMode newRunningMode = static_cast<RunningMode>(runningModeChoice);
+	if (newRunningMode == STRATEGY_MODE) {
+		if (newRunningMode != m_world.m_runningMode) {
+			m_world.m_strategyStep = 0;
+			m_world.m_ownRobot.m_periphericalsConfig = OwnRobotPeriphericalsConfig{ true, true, true };
+		}
+
+		if (ImGui::Button("Restart strategy")) {
+			m_world.m_strategyStep = 0;
+		}
+
+		static int strategyChoice = std::find(m_strategiesNames.begin(), m_strategiesNames.end(), m_world.m_strategyName) - m_strategiesNames.begin();
+		ImGui::Combo("Strategy", &strategyChoice, m_strategiesNamesCharPtr, m_strategiesNames.size());
+		std::string newStrategyName = m_strategiesNames[strategyChoice];
+		if (newStrategyName != m_world.m_strategyName) {
+			m_world.m_strategyName = newStrategyName;
+			m_world.m_strategyStep = 0;
+			m_world.m_ownRobot.m_periphericalsConfig = OwnRobotPeriphericalsConfig{ true, true, true };
+		}
+
+		ImGui::Text("Current step: %.1i", m_world.m_strategyStep);
+	}
+	m_world.m_runningMode = newRunningMode;
+}
+
+void GraphicalUserInterface::periphericalsConfigRoutine() {
+	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
+    ImGui::Begin("HAL configuration", 0, ImGuiWindowFlags_AlwaysAutoResize);
     ImGui::Checkbox("Camera connected", &m_world.m_ownRobot.m_periphericalsConfig.cameraConnected);
     ImGui::Checkbox("Rolling base connected", &m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected);
     ImGui::Checkbox("Arm connected", &m_world.m_ownRobot.m_periphericalsConfig.armConnected);
-    ImGui::End();
+    ImGui::Checkbox("Enable gamepad", &m_gamepadEnabled);
+	ImGui::End();
 }
 
-void GraphicalUserInterface::ownRobotCameraRoutine() {
+void GraphicalUserInterface::cameraRoutine() {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Camera", 0, ImGuiWindowFlags_AlwaysAutoResize);
 	if (m_world.m_ownRobot.m_periphericalsConfig.cameraConnected) {
@@ -30,45 +74,68 @@ void GraphicalUserInterface::ownRobotCameraRoutine() {
 		ImGui::Text("Own robot X: %.1f", m_world.m_ownRobot.m_currentPose.m_position.m_x);
 		ImGui::Text("Own robot Y: %.1f", m_world.m_ownRobot.m_currentPose.m_position.m_y);
 		ImGui::Text("Own robot Theta: %.3f", m_world.m_ownRobot.m_currentPose.m_orientation);
+		ImGui::Text("Adv robot X: %.1f", m_world.m_advRobot.m_currentPose.m_position.m_x);
+		ImGui::Text("Adv robot Y: %.1f", m_world.m_advRobot.m_currentPose.m_position.m_y);
+		ImGui::Text("Adv robot Theta: %.3f", m_world.m_advRobot.m_currentPose.m_orientation);
 	} else {
-		//TODO: Complete with communication
 		ImGui::SliderFloat("Own robot X", &m_world.m_ownRobot.m_currentPose.m_position.m_x, X_MIN_BORDER, X_MAX_BORDER, "%.1f");
 		ImGui::SliderFloat("Own robot Y", &m_world.m_ownRobot.m_currentPose.m_position.m_y, Y_MIN_BORDER, Y_MAX_BORDER, "%.1f");
-		ImGui::SliderFloat("Own robot Theta", &m_world.m_ownRobot.m_currentPose.m_orientation, 0, 2 * PI);
+		ImGui::SliderFloat("Own robot Theta", &m_world.m_ownRobot.m_currentPose.m_orientation, -PI, PI);
+		ImGui::SliderFloat("Adv robot X", &m_world.m_advRobot.m_currentPose.m_position.m_x, X_MIN_BORDER, X_MAX_BORDER, "%.1f");
+		ImGui::SliderFloat("Adv robot Y", &m_world.m_advRobot.m_currentPose.m_position.m_y, Y_MIN_BORDER, Y_MAX_BORDER, "%.1f");
+		ImGui::SliderFloat("Adv robot Theta", &m_world.m_advRobot.m_currentPose.m_orientation, -PI, PI);
 	}
 	ImGui::End();
 }
 
 void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
-	static int mode = 0;
+	static int mode = 2;
 	const char* modesList[] =
 	{
 		"Individual motor speeds control",
 		"dx dy dtheta control",
+		"Position control"
 	};
 	
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Rolling base", 0, ImGuiWindowFlags_AlwaysAutoResize);
 	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected) {
 		ImGui::Checkbox("Enable motors", &m_world.m_ownRobot.m_motorsEnabled);
-		ImGui::Combo("Mods", &mode, modesList, IM_ARRAYSIZE(modesList));
+		ImGui::Checkbox("Enable obstacle avoidance", &m_world.m_ownRobot.m_obstacleAvoidance);
+		ImGui::Combo("Modes", &mode, modesList, IM_ARRAYSIZE(modesList));
 		m_world.m_ownRobot.m_ownRobotRollingBaseMode = OwnRobotRollingBaseMode(mode);
 		switch (m_world.m_ownRobot.m_ownRobotRollingBaseMode) {
 			case INDIVIDUAL_MOTOR_SPEEDS_CONTROL:
 				ImGui::SliderInt("Motor 1 target speed", &m_world.m_ownRobot.m_motor1TargetSpeedPercentage, -100, 100);
 				ImGui::SliderInt("Motor 2 target speed", &m_world.m_ownRobot.m_motor2TargetSpeedPercentage, -100, 100);
 				ImGui::SliderInt("Motor 3 target speed", &m_world.m_ownRobot.m_motor3TargetSpeedPercentage, -100, 100);
-				if (ImGui::Button("Stop")) {
+				if (ImGui::Button("Stop") || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 					m_world.m_ownRobot.m_motor1TargetSpeedPercentage = 0;
 					m_world.m_ownRobot.m_motor2TargetSpeedPercentage = 0;
 					m_world.m_ownRobot.m_motor3TargetSpeedPercentage = 0;
 				}
 				break;
 			case DX_DY_DTHETA_CONTROL:
+				if (m_gamepadEnabled){
+					m_world.m_ownRobot.m_dXTarget = (sf::Joystick::getAxisPosition(0, sf::Joystick::R) - sf::Joystick::getAxisPosition(0, sf::Joystick::Z))/2.f;
+					m_world.m_ownRobot.m_dYTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::X);
+					m_world.m_ownRobot.m_dThetaTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::U);
+				}
+				ImGui::SliderInt("Taget dX", &m_world.m_ownRobot.m_dXTarget, -100, 100);
+				ImGui::SliderInt("Target dY", &m_world.m_ownRobot.m_dYTarget, -100, 100);
+				ImGui::SliderInt("Target dTheta", &m_world.m_ownRobot.m_dThetaTarget, -100, 100);
+				if (ImGui::Button("Stop") || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+					m_world.m_ownRobot.m_dXTarget = 0;
+					m_world.m_ownRobot.m_dYTarget = 0;
+					m_world.m_ownRobot.m_dThetaTarget = 0;
+				}
+
+				break;
+			case POSE_CONTROL:
+				ImGui::SliderInt("Max speed percentage", &m_world.m_ownRobot.m_maxSpeedPercentage, 0, 100);
 				ImGui::SliderFloat("Taget X", &m_world.m_ownRobot.m_targetPose.m_position.m_x, X_MIN_BORDER, X_MAX_BORDER, "%.1f");
 				ImGui::SliderFloat("Target Y", &m_world.m_ownRobot.m_targetPose.m_position.m_y, Y_MIN_BORDER, Y_MAX_BORDER, "%.1f");
-				ImGui::SliderFloat("Target Theta", &m_world.m_ownRobot.m_targetPose.m_orientation, 0, 2 * PI);
-				ImGui::Button("Goto target");
+				ImGui::SliderFloat("Target Theta", &m_world.m_ownRobot.m_targetPose.m_orientation, -PI, PI);
 
 				break;
 		}
@@ -79,8 +146,6 @@ void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
 }
 
 void GraphicalUserInterface::ownRobotArmRoutine() {
-	static bool immediate = 0;
-	static int command = 0, argument = 0;
 	const char* commandsList[] =
 	{
 		"Stop / Wait",
@@ -91,25 +156,74 @@ void GraphicalUserInterface::ownRobotArmRoutine() {
 		"Run memorized sequence",
 	};
 
+	static bool button0Pressed = 0, button1Pressed = 0, button2Pressed = 0, button3Pressed = 0;
+	static bool button0PreviouslyPressed = 0, button1PreviouslyPressed = 0, button2PreviouslyPressed = 0, button3PreviouslyPressed = 0;
+
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Arm", 0, ImGuiWindowFlags_AlwaysAutoResize);
 	if (m_world.m_ownRobot.m_periphericalsConfig.armConnected) {
-		ImGui::Checkbox("Immediate command", &immediate);
-		ImGui::Combo("Command", &command, commandsList, IM_ARRAYSIZE(commandsList));
-		ImGui::SliderInt("Argument", &argument, 0, 15);
-		ImGui::Button("Send command");
-		//TODO: Complete with communication
-	} else {
+		ImGui::Text("Arm 1:");
+		ImGui::Checkbox("Immediate command 1", &m_world.m_ownRobot.m_arm1.m_command.immediate);
+		ImGui::Combo("Command 1", &m_world.m_ownRobot.m_arm1.m_command.commandType, commandsList, IM_ARRAYSIZE(commandsList));
+		ImGui::SliderInt("Argument 1", &m_world.m_ownRobot.m_arm1.m_command.argument, 0, 15);
+		if (ImGui::Button("Send command arm 1")) {
+			m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+		}
+		ImGui::Checkbox("Immediate command 2", &m_world.m_ownRobot.m_arm2.m_command.immediate);
+		ImGui::Combo("Command 2", &m_world.m_ownRobot.m_arm2.m_command.commandType, commandsList, IM_ARRAYSIZE(commandsList));
+		ImGui::SliderInt("Argument 2", &m_world.m_ownRobot.m_arm2.m_command.argument, 0, 15);
+		if (ImGui::Button("Send command arm 2")) {
+			m_world.m_ownRobot.m_arm2.m_isCommandToSend = true;
+		}
+		if (m_gamepadEnabled) {
+			button0Pressed = sf::Joystick::isButtonPressed(0, 0);
+			button1Pressed = sf::Joystick::isButtonPressed(0, 1);
+			button2Pressed = sf::Joystick::isButtonPressed(0, 2);
+			button3Pressed = sf::Joystick::isButtonPressed(0, 3);
 
+			if (button1Pressed && !button1PreviouslyPressed) {
+				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 6;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			} else if (button2Pressed && !button2PreviouslyPressed) {
+				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 12;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			}
+
+			if (button3Pressed && !button3PreviouslyPressed) {
+                m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 1;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 13;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			} else if (button0Pressed && !button0PreviouslyPressed) {
+				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 1;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 7;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			}
+
+			button0PreviouslyPressed = button0Pressed;
+			button1PreviouslyPressed = button1Pressed;
+			button2PreviouslyPressed = button2Pressed;
+			button3PreviouslyPressed = button3Pressed;
+		}
 	}
 	ImGui::End();
 }
 
 void GraphicalUserInterface::update() {
-	ownRobotPeriphericalsConfigRoutine();
+	homeMenuConfig();
+	
+	periphericalsConfigRoutine();
+	/*if (m_world.m_runningMode != STRATEGY_MODE) {
+		periphericalsConfigRoutine();
+	}*/
 	
 	// Sensors routines
-	ownRobotCameraRoutine();
+	cameraRoutine();
 
 	// Actuators routines
 	ownRobotRollingBaseRoutine();
@@ -117,6 +231,8 @@ void GraphicalUserInterface::update() {
 
 	m_world.m_ownRobot.m_currentPose.update();
 	m_world.m_ownRobot.m_currentPose.draw(m_window);
+	m_world.m_advRobot.m_currentPose.update();
+	m_world.m_advRobot.m_currentPose.draw(m_window);
 	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected) {
 		m_world.m_ownRobot.m_targetPose.update();
 		m_world.m_ownRobot.m_targetPose.draw(m_window);

@@ -9,8 +9,8 @@ LineSegment::LineSegment(Vec2f p1, Vec2f p2, sf::Color color) {
 	m_p2 = p2;
 	m_direction = p2 - p1;
 
-	m_shape[0] = sf::Vertex(m_p1.toSfmlVector() * ZOOM, color);
-	m_shape[1] = sf::Vertex(m_p2.toSfmlVector() * ZOOM, color);
+	m_shape[0] = sf::Vertex(m_p1.toSfmlVector(), color);
+	m_shape[1] = sf::Vertex(m_p2.toSfmlVector(), color);
 }
 
 bool LineSegment::containsPoint(Vec2f p) {

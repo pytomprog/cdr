@@ -35,11 +35,11 @@ int main() {
         hal.updateConfig();
 
         // Sensors routines
-        hal.cameraRoutine();
+        hal.ownRobotCameraRoutine();
 
         // Actuators routines
-        hal.rollingBaseRoutine();
-        hal.armRoutine();
+        hal.ownRobotRollingBaseRoutine();
+        hal.ownRobotArmRoutine();
 
         hal.m_ownRobot.m_currentPose.update();
         hal.m_ownRobot.m_currentPose.draw(window);
