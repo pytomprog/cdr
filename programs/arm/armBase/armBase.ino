@@ -20,7 +20,9 @@ struct Sequence {
   Command steps [MAX_SEQUENCE_LENGTH];
 };
 
-int memorizedPositions[][3] = {{0, 0, 0}, {180, 180, 180}, {90, 90, 90}};
+Command defaultHandPos {4, 6};
+
+int memorizedPositions[][6] = {{0, 0, 0}, {180, 180, 180}, {90, 82, 105}, {90, 144, 36}, {90, 144, 105}, {90, 82, 36}, {100, 82, 105}};
 
 Sequence memorizedSequences[] = {Sequence{4, {Command{4, 0}, Command{0, 5}, Command{4, 1}, Command{0, 5}}},
                                  Sequence{4, {Command{5, 0}, Command{5, 0}, Command{5, 0}, Command{5, 0}}},};
@@ -45,7 +47,7 @@ void setup() {
   servo3.attach(SERVO3_PIN);
 
   Serial.begin(115200);
-  Wire.begin(1); // join I2C bus with address 0x01
+  Wire.begin(0x11); // join I2C bus with address 0x01
   Wire.onReceive(i2cReceiverHandler);
 }
 
@@ -85,6 +87,7 @@ void i2cReceiverHandler(int howMany) {
     } else {
       addCommandToQueue(Command{index, argument});
     }
+<<<<<<< Updated upstream
     #ifdef SERIAL_ENABLED
       Serial.println();
     #endif //SERIAL_ENABLED
@@ -93,6 +96,11 @@ void i2cReceiverHandler(int howMany) {
     Serial.println();
   #endif //SERIAL_ENABLED
   digitalWrite(LED_BUILTIN, LOW);
+=======
+    Wire.println();
+  }
+  Wire.println();
+>>>>>>> Stashed changes
 }
 
 String byteToString(byte b) {
@@ -127,9 +135,13 @@ void executeCommand(Command command) {
     int index = command.index;
     int argument = command.argument;
 
+<<<<<<< Updated upstream
     #ifdef SERIAL_ENABLED
       Serial.println("Executing command: index: " + String(index) + ", argument: " + String(argument));
     #endif //SERIAL_ENABLED
+=======
+    Wire.println("Executing command: index: " + String(index) + ", argument: " + String(argument));
+>>>>>>> Stashed changes
 
     switch (index) {
       case 0: //stop
@@ -141,13 +153,13 @@ void executeCommand(Command command) {
         }
         break;
       case 1:   //set mot 1
-        servo1.write(argument*12);
+        servo1.write(argument*8);
         break;
       case 2:   //set mot 2
-        servo2.write(argument*12);
+        servo2.write(argument*8);
         break;
       case 3:   //set mot 3
-        servo3.write(argument*12);
+        servo3.write(argument*8);
         break;
       case 4:   //set memorized pos (every motors)
         servo1.write(memorizedPositions[argument][0]);
@@ -155,9 +167,13 @@ void executeCommand(Command command) {
         servo3.write(memorizedPositions[argument][2]);
         break;
       case 5:
+<<<<<<< Updated upstream
         #ifdef SERIAL_ENABLED
           Serial.println("Playing sequence " + String(argument));
         #endif //SERIAL_ENABLED
+=======
+        Wire.println("Playing sequence " + String(argument));
+>>>>>>> Stashed changes
         playSequence(memorizedSequences[argument]);
         break;
       case 6:
@@ -169,9 +185,13 @@ void executeCommand(Command command) {
 }
 
 void playSequence(Sequence sequence){
+<<<<<<< Updated upstream
   #ifdef SERIAL_ENABLED
     Serial.println("Sequence size: " + String(sequence.length));
   #endif //SERIAL_ENABLED
+=======
+  Wire.println("Sequence size: " + String(sequence.length));
+>>>>>>> Stashed changes
   for (int step = 0; step<sequence.length; step++){
     executeCommand(sequence.steps[step]);
   }
