@@ -1,1 +1,10 @@
-calibrationImages
+# Xmake cache
+.xmake/
+.vscode/
+build/
+vsxmake2022/
+
+# MacOS Cache
+.DS_Store
+
+
