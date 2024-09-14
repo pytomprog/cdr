@@ -21,16 +21,18 @@ void Figure::display() {
 	matplot::title(m_title);
 	matplot::legend(m_legend);
 	matplot::hold(matplot::on);
-	for (std::vector<float> m_dataTimeline : m_dataTimelines) {
-		switch (m_plottingType){
-		//case SCATTER:
-		//	matplot::scatter(m_dataTimeline);
-		case HIST:
-			matplot::hist(m_dataTimeline);
-			break;
-		default:
-			matplot::plot(m_dataTimeline);
-			break;
+	for (const std::vector<float>& dataTimeline : m_dataTimelines) {
+		if (dataTimeline.size() > 0) {
+			switch (m_plottingType){
+			//case SCATTER:
+			//	matplot::scatter(dataTimeline);
+			case HIST:
+				matplot::hist(dataTimeline);
+				break;
+			default:
+				matplot::plot(dataTimeline);
+				break;
+			}
 		}
 	}
 }

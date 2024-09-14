@@ -7,9 +7,12 @@ auto fmt::formatter<cv::Mat>::format(const cv::Mat& mat, format_context& ctx) co
 		for (int j = 0; j < mat.cols; ++j) {
 			if (mat.channels() == 1) {
 				fmt::format_to(out, "{}", mat.at<float>(i, j));
+			} else if (mat.channels() == 2) {
+				cv::Vec2f vec = mat.at<cv::Vec2f>(i, j);
+				fmt::format_to(out, "[{}, {}]", vec[0], vec[1]);
 			} else if (mat.channels() == 3) {
-				cv::Vec3f pixel = mat.at<cv::Vec3f>(i, j);
-				fmt::format_to(out, "[{}, {}, {}]", pixel[0], pixel[1], pixel[2]);
+				cv::Vec3f vec = mat.at<cv::Vec3f>(i, j);
+				fmt::format_to(out, "[{}, {}, {}]", vec[0], vec[1], vec[2]);
 			}
 			if (j < mat.cols - 1) {
 				fmt::format_to(out, ", ");
@@ -21,6 +24,12 @@ auto fmt::formatter<cv::Mat>::format(const cv::Mat& mat, format_context& ctx) co
 			fmt::format_to(out, "]");
 		}
 	}
+	return out;
+}
+
+auto fmt::formatter<cv::Vec2f>::format(const cv::Vec2f& vec, format_context& ctx) const -> decltype(ctx.out()) {
+	auto out = ctx.out();
+	fmt::format_to(out, "[{}, {}]", vec[0], vec[1]);
 	return out;
 }
 

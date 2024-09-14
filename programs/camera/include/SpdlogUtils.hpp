@@ -13,6 +13,11 @@ struct fmt::formatter<cv::Mat> : fmt::formatter<std::string> {
 };
 
 template <>
+struct fmt::formatter<cv::Vec2f> : fmt::formatter<std::string> {
+	auto format(const cv::Vec2f& vec, format_context& ctx) const -> decltype(ctx.out());
+};
+
+template <>
 struct fmt::formatter<cv::Vec3f> : fmt::formatter<std::string> {
 	auto format(const cv::Vec3f& vec, format_context& ctx) const -> decltype(ctx.out());
 };

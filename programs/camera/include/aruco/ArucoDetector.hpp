@@ -13,7 +13,10 @@
 #include <opencv2/objdetect/aruco_detector.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 
-#include "Camera.hpp"
+#include <spdlog/spdlog.h>
+#include "SpdlogUtils.hpp"
+
+#include "camera/Camera.hpp"
 #include "Profiler.hpp"
 #include "aruco/ArucoUtils.hpp"
 
@@ -36,12 +39,9 @@ public:
 	cv::Rect m_cropRectangle;
 	cv::Rect m_futureCropRectangle;
 	
-	float m_markerLength = 100.f;
-	cv::Mat m_markerPoints;
-
 	ArucoDetector(Camera& camera, Profiler& profiler, int focusMarkerId);
 	void getMarkers3dPosition(cv::Mat& inputFrame);
-	void drawMarkers(cv::Mat& inputFrame);
+	void drawResults(cv::Mat& inputFrame);
 };
 
 #endif // CDR_ARUCODETECTOR_HPP

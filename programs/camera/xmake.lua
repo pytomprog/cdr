@@ -9,9 +9,10 @@ end
 
 if is_arch("arm.*") then
     add_defines("ARM")
+    add_requires("libcamera", "libevent_pthreads")
 end
 
-add_requires("opencv >=4.10.0", {configs = {debug = false}})--is_mode("debug")}})--, eigen = false}})
+add_requires("opencv >=4.10.0", {configs = {gtk = true}})--is_mode("debug")}})--, eigen = false}})
 add_requires("matplotplusplus", "spdlog")
 --add_requires("implot")
 
@@ -26,6 +27,9 @@ target("camera")
     add_packages("opencv")
     add_packages("matplotplusplus", "spdlog") --, "implot")
 
+    if is_arch("arm.*") then
+        add_packages("libcamera", "libevent_pthreads")
+    end
 
 --    after_build(function (target)
 --        os.mkdir(path.join(target:targetdir(), "assets"))

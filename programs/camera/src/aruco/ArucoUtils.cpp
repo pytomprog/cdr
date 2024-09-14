@@ -18,3 +18,34 @@ void improveFutureCropRectangle(cv::Mat& inputFrame, std::vector<cv::Point2f>& m
 	//std::cout << "correctedX: " << correctedX << ", correctedY: " << correctedY << ", correctedWidth: " << correctedWidth << ", correctedHeight: " << correctedHeight << std::endl;
 	futureCropRectangle = { correctedX, correctedY, correctedWidth, correctedHeight };
 }
+
+float markerLength(int markerId) {
+	if (markerId >= 1 && markerId <= 10) {
+		return 70.f;
+	} else if (markerId >= 20 && markerId <= 23) {
+		return 100.f;
+	}
+	return 50.f;
+}
+
+cv::Mat marker3dPoints(int markerId) {
+	int length = markerLength(markerId);
+	cv::Mat points = cv::Mat(4, 1, CV_32FC3);
+	points.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-length / 2.f, length / 2.f, 0);
+	points.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(length / 2.f, length / 2.f, 0);
+	points.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(length / 2.f, -length / 2.f, 0);
+	points.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(-length / 2.f, -length / 2.f, 0);
+	return points;
+}
+
+cv::Mat table3dPoints() {
+	//TEST: Not to the real dimensions (500x500 actually) and drawn for every detected marker and centered on it
+	//TODO: Program final version
+	
+	cv::Mat points = cv::Mat(4, 1, CV_32FC3);
+	points.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-250, 250, 0);
+	points.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(250, 250, 0);
+	points.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(250, -250, 0);
+	points.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(-250, -250, 0);
+	return points;
+}
