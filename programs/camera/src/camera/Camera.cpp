@@ -88,33 +88,49 @@ int Camera::open(std::string source) {
 		}
 
 		libcameraCamera->requestCompleted.connect(requestComplete);
-		
-		m_intrinsicMatrix = cv::Mat(3, 3, CV_32FC1, new float[] { 1300.f, 0.f, m_width / 2.f, 0.f, 1300.f, m_height / 2.f, 0.f, 0.f, 1.f });
-		m_distortionCoefficients = cv::Mat(1, 5, CV_32FC1, new float[] { 0.f, 0.f, 0.f, 0.f, 0.f}); // Maybe 5 rows and 1 column
-		spdlog::debug("Camera intrinsic matrix:\n{}", m_intrinsicMatrix);
-		spdlog::debug("Camera distortion coefficients:\n{}", m_distortionCoefficients);
 	#else
+		m_processingImageFile = false;
 		if (std::find_if(source.begin(), source.end(), [](unsigned char c) { return !std::isdigit(c); }) == source.end()) {
 			m_cap.open(atoi(source.c_str()));
 		} else {
-			m_cap.open(source);
+			m_filePath = source;
+			if (m_filePath.extension() == ".png" || m_filePath.extension() == ".jpg" || m_filePath.extension() == ".jpeg") {
+				m_processingImageFile = true;
+			} else {
+				m_cap.open(source);
+			}
 		}
 		
-		if (!m_cap.isOpened()) {
-			spdlog::error("No video stream detected");
-			return EXIT_FAILURE;
+		if (m_processingImageFile) {
+			cv::Mat testFrame = cv::imread(m_filePath.string());
+			if (testFrame.empty()) {
+				spdlog::error("File image is empty or doesn't exist");
+				return EXIT_FAILURE;
+			}
+			m_width = testFrame.cols; // In case of resolution slightly changed
+			m_height = testFrame.rows;
+		} else {
+			if (!m_cap.isOpened()) {
+				spdlog::error("No video stream detected");
+				return EXIT_FAILURE;
+			}
+			m_cap.set(cv::CAP_PROP_FRAME_WIDTH, m_width);
+			m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, m_height);
+			cv::Mat testFrame;
+			m_cap >> testFrame;
+			if (testFrame.empty()) {
+				spdlog::error("Test frame is empty");
+				return EXIT_FAILURE;
+			}
+			m_width = testFrame.cols; // In case of resolution slightly changed
+			m_height = testFrame.rows;
 		}
-		m_cap.set(cv::CAP_PROP_FRAME_WIDTH, m_width);
-		m_cap.set(cv::CAP_PROP_FRAME_HEIGHT, m_height);
-		cv::Mat testFrame;
-		m_cap >> testFrame;
-		if (testFrame.empty()) {
-			spdlog::error("Test frame is empty");
-			return EXIT_FAILURE;
-		}
-		m_width = testFrame.cols; // In case of resolution slightly changed
-		m_height = testFrame.rows;
 	#endif //ARM
+
+	m_intrinsicMatrix = cv::Mat(3, 3, CV_32FC1, new float[] { 850.f, 0.f, m_width / 2.f, 0.f, 850.f, m_height / 2.f, 0.f, 0.f, 1.f });
+	m_distortionCoefficients = cv::Mat(1, 5, CV_32FC1, new float[] { 0.f, 0.f, 0.f, 0.f, 0.f}); // Maybe 5 rows and 1 column
+	spdlog::debug("Camera intrinsic matrix:\n{}", m_intrinsicMatrix);
+	spdlog::debug("Camera distortion coefficients:\n{}", m_distortionCoefficients);
 	
 	return EXIT_SUCCESS;
 }
@@ -132,7 +148,11 @@ void Camera::run() {
 		cv::Mat inputFrame;
 		bool running = true;
 		while (running) {
-			m_cap >> inputFrame;
+			if (m_processingImageFile) {
+				inputFrame = cv::imread(m_filePath.string());
+			} else {
+				m_cap >> inputFrame;
+			}
 			int returnCode = processFrameFunction(inputFrame);
 			if (returnCode != EXIT_SUCCESS) {
 				running = false;

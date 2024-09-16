@@ -10,9 +10,11 @@ end
 if is_arch("arm.*") then
     add_defines("ARM")
     add_requires("libcamera", "libevent_pthreads")
+    add_requires("opencv >=4.10.0", {configs = {gtk = true}})--is_mode("debug")}})
+else
+    add_requires("opencv >=4.10.0")--is_mode("debug")}})    
 end
 
-add_requires("opencv >=4.10.0", {configs = {gtk = true}})--is_mode("debug")}})--, eigen = false}})
 add_requires("matplotplusplus", "spdlog")
 --add_requires("implot")
 
@@ -24,6 +26,11 @@ target("camera")
     add_headerfiles("src/**.hpp", "src/**.h")
     add_headerfiles("include/**.hpp", "include/**.h")
 
+    if not is_arch("arm.*") then
+        remove_files("src/camera/event_loop.cpp", "src/camera/mapped_framebuffer.cpp")
+        remove_headerfiles("include/camera/event_loop.hpp", "include/camera/mapped_framebuffer.hpp")
+    end
+
     add_packages("opencv")
     add_packages("matplotplusplus", "spdlog") --, "implot")
 
@@ -31,10 +38,10 @@ target("camera")
         add_packages("libcamera", "libevent_pthreads")
     end
 
---    after_build(function (target)
---        os.mkdir(path.join(target:targetdir(), "assets"))
---        os.cp("assets/*", path.join(target:targetdir(), "assets"))
---    end)
+    after_build(function (target)
+        os.mkdir(path.join(target:targetdir(), "assets"))
+        os.cp("assets/*", path.join(target:targetdir(), "assets"))
+    end)
 
 --
 -- If you want to known more usage about xmake, please see https://xmake.io

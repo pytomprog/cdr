@@ -3,6 +3,7 @@
 .vscode/
 build/
 vsxmake2022/
+assets/testRessources/
 
 # MacOS Cache
 .DS_Store

@@ -7,6 +7,7 @@
 #include <memory>
 #include <thread>
 #include <functional>
+#include <filesystem>
 
 #ifdef ARM
 	#include <libcamera/libcamera.h>
@@ -44,6 +45,8 @@ public:
 		std::vector<std::unique_ptr<libcamera::Request>> m_startingRequests;
 	#else
 		cv::VideoCapture m_cap;
+		std::filesystem::path m_filePath;
+		bool m_processingImageFile;
 	#endif //ARM
 
 	Camera(int width, int height);

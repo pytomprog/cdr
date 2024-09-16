@@ -45,9 +45,11 @@ int Main::step(cv::Mat inputFrame) {
 	if (inputFrame.empty())
 		return EXIT_FAILURE;
 	
-	if ((cv::getTickCount() - m_startingTick) / cv::getTickFrequency() > 10) {
-		return 2; //TODO: create EXIT_STOP with define and use it
-	}
+	#ifndef CVWINDOW_ENABLED
+		if ((cv::getTickCount() - m_startingTick) / cv::getTickFrequency() > 10) {
+			return 2; //TODO: create EXIT_STOP with define and use it
+		}
+	#endif //CVWINDOW_ENABLED
 	
 	m_profiler.updateTimepoint(0);
 	spdlog::debug("Iteration {}:", m_iteration);
