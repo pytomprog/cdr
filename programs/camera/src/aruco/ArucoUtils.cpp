@@ -38,14 +38,40 @@ cv::Mat marker3dPoints(int markerId) {
 	return points;
 }
 
+cv::Mat tableMarkers3dPoints(std::vector<int> markersId) {
+	cv::Mat points = cv::Mat(4*markersId.size(), 1, CV_32FC3);
+	for (size_t i = 0; i < markersId.size(); i++) {
+		cv::Mat currentPoints = marker3dPoints(markersId[i]);
+
+		cv::Vec3f basePosition;
+		switch (markersId[i]) {
+		case 20:
+			basePosition = cv::Vec3f(750.f, 1500.f, 0.f);
+			break;
+		case 21:
+			basePosition = cv::Vec3f(2250.f, 1500.f, 0.f);
+			break;
+		case 22:
+			basePosition = cv::Vec3f(750.f, 500.f, 0.f);
+			break;
+		case 23:
+			basePosition = cv::Vec3f(2250.f, 500.f, 0.f);
+			break;
+		default:
+			break;
+		}
+
+		for (int j = 0; j < 4; j++)
+			points.ptr<cv::Vec3f>(0)[4 * i + j] = basePosition + currentPoints.ptr<cv::Vec3f>(0)[j];
+	}
+	return points;
+}
+
 cv::Mat table3dPoints() {
-	//TEST: Not to the real dimensions (500x500 actually) and drawn for every detected marker and centered on it
-	//TODO: Program final version
-	
 	cv::Mat points = cv::Mat(4, 1, CV_32FC3);
-	points.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(-250, 250, 0);
-	points.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(250, 250, 0);
-	points.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(250, -250, 0);
-	points.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(-250, -250, 0);
+	points.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(0.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(3000.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(3000.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(0.f, 2000.f, 0.f);
 	return points;
 }

@@ -32,6 +32,9 @@ public:
 	std::vector<std::vector<cv::Point2f>> m_markersCorners, m_rejectedCandidates;
 	std::vector<int> m_markersId;
 	std::map<int, cv::Vec3f> m_rvecs, m_tvecs;
+	std::vector<int> m_tableMarkersId;
+	cv::Vec3f m_tableRvec, m_tableTvec;
+	bool m_tableAlreadyDetected;
 
 	int m_focusMarkerId;
 

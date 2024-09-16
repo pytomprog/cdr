@@ -13,6 +13,7 @@
 void improveFutureCropRectangle(cv::Mat& inputFrame, std::vector<cv::Point2f>& markerCorners, cv::Rect& futureCropRectangle);
 float markerLength(int markerId);
 cv::Mat marker3dPoints(int markerId);
+cv::Mat tableMarkers3dPoints(std::vector<int> markersId);
 cv::Mat table3dPoints();
 
 #endif // CDR_ARUCOUTILS_HPP
