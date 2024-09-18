@@ -20,6 +20,11 @@
 #include "Profiler.hpp"
 #include "aruco/ArucoUtils.hpp"
 
+enum Team {
+	BLUE_TEAM, // Aruco tags 1 to 5
+	YELLOW_TEAM // Aruco tags 6 to 10
+};
+
 class ArucoDetector {
 public:
 	Camera& m_camera;
@@ -34,15 +39,21 @@ public:
 	std::map<int, cv::Vec3f> m_rvecs, m_tvecs;
 	std::vector<int> m_tableMarkersId;
 	cv::Vec3f m_tableRvec, m_tableTvec;
+	cv::Vec3f m_tableInvRvec, m_tableInvTvec;
 	bool m_tableAlreadyDetected;
-
-	int m_focusMarkerId;
+	cv::Vec3f m_ownRobotRvecCameraFrame, m_ownRobotTvecCameraFrame;
+	cv::Vec3f m_ownRobotRvecTableFrame, m_ownRobotTvecTableFrame;
+	bool m_ownRobotDetected;
+	bool m_ownRobotAlreadyDetected;
 
 	cv::Mat m_croppedFrame;
 	cv::Rect m_cropRectangle;
 	cv::Rect m_futureCropRectangle;
+
+	Team m_ownTeam;
+	int m_focusMarkerId;
 	
-	ArucoDetector(Camera& camera, Profiler& profiler, int focusMarkerId);
+	ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam, int focusMarkerId);
 	void getMarkers3dPosition(cv::Mat& inputFrame);
 	void drawResults(cv::Mat& inputFrame);
 };

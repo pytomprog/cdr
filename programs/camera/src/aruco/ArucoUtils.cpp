@@ -68,10 +68,32 @@ cv::Mat tableMarkers3dPoints(std::vector<int> markersId) {
 }
 
 cv::Mat table3dPoints() {
-	cv::Mat points = cv::Mat(4, 1, CV_32FC3);
+	cv::Mat points = cv::Mat(16, 1, CV_32FC3);
 	points.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(0.f, 0.f, 0.f);
 	points.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(3000.f, 0.f, 0.f);
 	points.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(3000.f, 2000.f, 0.f);
 	points.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(0.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[4] = cv::Vec3f(0.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[5] = cv::Vec3f(0.f, 0.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[6] = cv::Vec3f(3000.f, 0.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[7] = cv::Vec3f(3000.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[8] = cv::Vec3f(3000.f, 0.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[9] = cv::Vec3f(3000.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[10] = cv::Vec3f(3000.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[11] = cv::Vec3f(3000.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[12] = cv::Vec3f(0.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[13] = cv::Vec3f(0.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[14] = cv::Vec3f(0.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[15] = cv::Vec3f(0.f, 0.f, 70.f);
 	return points;
+}
+
+void inversePerspective(cv::Vec3f& rvec, cv::Vec3f& tvec, cv::Vec3f& invRvec, cv::Vec3f& invTvec) {
+	cv::Mat R;
+	cv::Rodrigues(rvec, R);
+	R = R.t();
+	invTvec = -cv::Vec3f(R.at<float>(0, 0) * tvec[0] + R.at<float>(0, 1) * tvec[1] + R.at<float>(0, 2) * tvec[2],
+		R.at<float>(1, 0)* tvec[0] + R.at<float>(1, 1) * tvec[1] + R.at<float>(1, 2) * tvec[2],
+		R.at<float>(2, 0)* tvec[0] + R.at<float>(2, 1) * tvec[1] + R.at<float>(2, 2) * tvec[2]);
+	cv::Rodrigues(R, invRvec);
 }

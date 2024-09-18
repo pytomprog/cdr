@@ -39,7 +39,7 @@ public:
 		DataPlotter m_dataPlotter;
 	#endif // PLOT_ENABLED
 	Camera m_camera = Camera(2304, 1296);
-	ArucoDetector m_arucoDetector = ArucoDetector(m_camera, m_profiler, 22);
+	ArucoDetector m_arucoDetector = ArucoDetector(m_camera, m_profiler, BLUE_TEAM, 3);
 	
 	int m_iteration = 0;
 	int64 m_startingTick;
