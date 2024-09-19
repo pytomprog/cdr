@@ -88,6 +88,9 @@ int Camera::open(std::string source) {
 		}
 
 		libcameraCamera->requestCompleted.connect(requestComplete);
+		
+		m_intrinsicMatrix = cv::Mat(3, 3, CV_32FC1, new float[] { 1010.f, 0.f, m_width / 2.f, 0.f, 1010.f, m_height / 2.f, 0.f, 0.f, 1.f });
+		m_distortionCoefficients = cv::Mat(5, 1, CV_32FC1, new float[] { 0, 0, 0, 0, 0 }); //-0.041f, 0.097f, -0.012f, 0.00026f, -0.066f}); // Maybe 5 rows and 1 column
 	#else
 		m_processingImageFile = false;
 		if (std::find_if(source.begin(), source.end(), [](unsigned char c) { return !std::isdigit(c); }) == source.end()) {
@@ -125,10 +128,11 @@ int Camera::open(std::string source) {
 			m_width = testFrame.cols; // In case of resolution slightly changed
 			m_height = testFrame.rows;
 		}
+		
+		m_intrinsicMatrix = cv::Mat(3, 3, CV_32FC1, new float[] { 850.f, 0.f, m_width / 2.f, 0.f, 850.f, m_height / 2.f, 0.f, 0.f, 1.f });
+		m_distortionCoefficients = cv::Mat(5, 1, CV_32FC1, new float[] { 0, 0, 0, 0, 0 }); // Maybe 5 rows and 1 column
 	#endif //ARM
 
-	m_intrinsicMatrix = cv::Mat(3, 3, CV_32FC1, new float[] { 850.f, 0.f, m_width / 2.f, 0.f, 850.f, m_height / 2.f, 0.f, 0.f, 1.f });
-	m_distortionCoefficients = cv::Mat(1, 5, CV_32FC1, new float[] { 0.f, 0.f, 0.f, 0.f, 0.f}); // Maybe 5 rows and 1 column
 	spdlog::debug("Camera intrinsic matrix:\n{}", m_intrinsicMatrix);
 	spdlog::debug("Camera distortion coefficients:\n{}", m_distortionCoefficients);
 	
@@ -230,6 +234,7 @@ void Camera::close() {
 			const std::vector<libcamera::Span<uint8_t>> mem = mappedBuffer.planes();
 				
 			int returnCode = processFrameFunction(cv::Mat(height, width, CV_8UC3, (uint8_t *)(mem[0].data()), stride).clone());
+			
 			if (returnCode != EXIT_SUCCESS) {
 				running = false;
 			}			
@@ -280,8 +285,8 @@ void Camera::close() {
 		//controls.set(libcamera::controls::AeExposureMode, libcamera::controls::AeExposureModeEnum::ExposureCustom); //I think it's not programmed, so we can't use it
 		
 		controls.set(libcamera::controls::ExposureTime, 20000); //20000ms => 50Hz max, TODO: test to see the best value
-		controls.set(libcamera::controls::AfMode, libcamera::controls::AfModeEnum::AfModeAuto);
-		//controls.set(libcamera::controls::LensPosition, 1/0.75); //20000ms => 50Hz max, TODO: test to see the best value
+		//controls.set(libcamera::controls::AfMode, libcamera::controls::AfModeEnum::AfModeAuto);
+		controls.set(libcamera::controls::LensPosition, 0);
 		//TODO: Handle focus and luminosity correctly		
 		
 		//controls.set(libcamera::controls::AnalogueGain, 16.f); //Significantly decrease perfomance when fullscreen detecting

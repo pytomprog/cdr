@@ -3,10 +3,11 @@
 void Profiler::updateTimepoint(size_t timepointIndex) {
 	if (timepointIndex < m_timepoints.size()) {
 		m_timepoints[timepointIndex] = cv::getTickCount();
-	} else if (timepointIndex == m_timepoints.size()) {
-		m_timepoints.push_back(cv::getTickCount());
 	} else {
-		spdlog::error("m_timepoints size is {} but you try to access to it's element {}", m_timepoints.size(), timepointIndex);
+		int nbToAdd = timepointIndex - m_timepoints.size() + 1;
+		for (int i = 0; i < nbToAdd; i++) {
+			m_timepoints.push_back(cv::getTickCount());
+		}
 	}
 }
 

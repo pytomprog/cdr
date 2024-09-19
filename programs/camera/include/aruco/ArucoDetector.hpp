@@ -25,8 +25,18 @@ enum Team {
 	YELLOW_TEAM // Aruco tags 6 to 10
 };
 
+enum State {
+	WAITING,
+	DETECTING_EVERYTHING,
+	DETECTING_TABLE,
+	DETECTING_OWN_ROBOT
+};
+
 class ArucoDetector {
 public:
+	State m_currentState;
+	State m_nextState;
+
 	Camera& m_camera;
 	Profiler& m_profiler;
 
