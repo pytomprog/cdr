@@ -5,7 +5,7 @@ ArucoDetector::ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam, i
 	
 	m_dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
 	m_cvDetectorParams = cv::aruco::DetectorParameters();
-	m_cvDetectorParams.useAruco3Detection = true;
+	m_cvDetectorParams.useAruco3Detection = false; //true;
 	m_cvDetector = cv::aruco::ArucoDetector(m_dictionary, m_cvDetectorParams);
 	
 	m_tableAlreadyDetected = false;

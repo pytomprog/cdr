@@ -18,5 +18,6 @@
 #endif // NDEBUG
 
 std::string cameraSource = "assets/testRessources/Image0001.png"; //"1";
+int timeout = 300;
 
 #endif //CDR_CONFIG_HPP

@@ -50,7 +50,7 @@ int Main::step(cv::Mat inputFrame) {
 		return EXIT_FAILURE;
 	
 	#ifndef CVWINDOW_ENABLED
-		if ((cv::getTickCount() - m_startingTick) / cv::getTickFrequency() > m_timeout) {
+		if ((cv::getTickCount() - m_startingTick) / cv::getTickFrequency() > timeout) {
 			return 2; //TODO: create EXIT_STOP with define and use it
 		}
 	#endif //CVWINDOW_ENABLED
