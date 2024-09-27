@@ -10,13 +10,17 @@
 #ifndef NDEBUG
 	#define PLOT_ENABLED
 	#define CVWINDOW_ENABLED
+	#define COMMUNICATION_ENABLED
 	spdlog::level::level_enum logLevel = spdlog::level::debug;
 #else
 	#define PLOT_ENABLED
-	#define CVWINDOW_ENABLED
+	//#define CVWINDOW_ENABLED
+	#define COMMUNICATION_ENABLED 
 	spdlog::level::level_enum logLevel = spdlog::level::info;
 #endif // NDEBUG
 
+std::string serverAddress = "192.168.130.245";
+int serverPort =  8910;
 std::string cameraSource = "assets/testRessources/Image0001.png"; //"1";
 int timeout = 300;
 

@@ -12,6 +12,16 @@ int Main::run() {
 
 	spdlog::debug("OpenCV infos: {}", cv::getBuildInformation().c_str());
 
+	#ifdef COMMUNICATION_ENABLED
+		m_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
+		m_serverAddress.sin_family = AF_INET;
+		m_serverAddress.sin_port = htons(serverPort);
+		m_serverAddress.sin_addr.s_addr = inet_addr(serverAddress.c_str());
+		connect(m_clientSocket, (struct sockaddr*)&m_serverAddress, sizeof(m_serverAddress));
+		fcntl(m_clientSocket, F_SETFL, O_NONBLOCK);
+		spdlog::info("Connected to the server, on {}:{}", serverAddress, serverPort);
+	#endif // COMMUNICATION_ENABLED
+
 	#ifdef PLOT_ENABLED
 		m_dataPlotter.addFigure("Marker position", { "tx", "ty", "tz" }, PLOT);
 		m_dataPlotter.addFigure("Marker rotation", { "rx", "ry", "rz" }, PLOT);
@@ -87,6 +97,12 @@ int Main::step(cv::Mat inputFrame) {
 		m_dataPlotter.m_figures["Own robot rotation"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] });
 	#endif // PLOT_ENABLED
 	m_profiler.updateTimepoint(5);
+	
+	#ifdef COMMUNICATION_ENABLED
+		std::string message = fmt::format("A {} {} {}", m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] + 1.575f).c_str(); //TODO: remove 1.575f and make it cleaner
+		//spdlog::info("Sending \"{}\" to the server", message);
+		send(m_clientSocket, message.c_str(), message.size(), 0);
+	#endif // COMMUNICATION_ENABLED
 	
 	#ifdef CVWINDOW_ENABLED
 		m_arucoDetector.drawResults(inputFrame);

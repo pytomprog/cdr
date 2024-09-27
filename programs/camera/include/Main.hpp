@@ -11,6 +11,11 @@
 #include <map>
 #include <cmath>
 #include <functional>
+#include <cstring>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h> 
+#include <unistd.h> 
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -43,6 +48,12 @@ public:
 	
 	int m_iteration = 0;
 	int64 m_startingTick;
+	
+	#ifdef COMMUNICATION_ENABLED
+		int m_clientSocket;
+		sockaddr_in m_serverAddress;
+		bool m_connectedToServer;
+	#endif // COMMUNICATION_ENABLED
 	
 	
 	Main();
