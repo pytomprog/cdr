@@ -5,6 +5,11 @@
 
 #include <map>
 #include <string>
+#include <iostream>
+#include <fstream>
+#include <ctime>
+
+#include <spdlog/spdlog.h>
 
 #define NOMINMAX
 #include <matplot/matplot.h>
@@ -17,6 +22,7 @@ public:
 
 	void addFigure(std::string title, std::vector<std::string> legend, PlottingType plottingType = PLOT);
 	void displayFigures();
+	void saveDataToCsv();
 };
 
 #endif // CDR_DATAPROFILER_HPP
