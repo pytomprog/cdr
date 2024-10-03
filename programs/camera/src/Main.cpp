@@ -31,10 +31,10 @@ int Main::run() {
 		//m_dataPlotter.addFigure("Corners y position", { "0", "1", "2", "3" }, PLOT);
 		m_dataPlotter.addFigure("Table position", { "tableTx", "tableTy", "tableTz" }, PLOT);
 		m_dataPlotter.addFigure("Table rotation", { "tableRx", "tableRy", "tableRz" }, PLOT);
-		m_dataPlotter.addFigure("Own robot position", { "robotTx", "robotTy", "robotTz" }, PLOT);
-		m_dataPlotter.addFigure("Own robot rotation", { "robotRx", "robotRy", "robotRz" }, PLOT);
-		m_dataPlotter.addFigure("Own robot position histogram", { "robotTxHist", "robotTyHist", "robotTzHist" }, HIST);
-		m_dataPlotter.addFigure("Own robot rotation histogram", { "robotRxHist", "robotRyHist", "robotRzHist" }, HIST);
+		m_dataPlotter.addFigure("Own robot position", { "robotTx", "robotTy", "robotTz", "robotTxFiltered", "robotTyFiltered" }, PLOT);
+		m_dataPlotter.addFigure("Own robot rotation", { "robotRx", "robotRy", "robotRz", "robotRzFiltered" }, PLOT);
+		//m_dataPlotter.addFigure("Own robot position histogram", { "robotTxHist", "robotTyHist", "robotTzHist" }, HIST);
+		//m_dataPlotter.addFigure("Own robot rotation histogram", { "robotRxHist", "robotRyHist", "robotRzHist" }, HIST);
 	#endif // PLOT_ENABLED
 	
 	processFrameFunction = [this](cv::Mat inputFrame) {return this->step(inputFrame);};
@@ -93,19 +93,28 @@ int Main::step(cv::Mat inputFrame) {
 			}
 		#endif // PLOT_ENABLED
 	}
+	
+	float robotTxFiltered = m_robotTxFilter.filter(m_arucoDetector.m_ownRobotTvecTableFrame[0]);
+	float robotTyFiltered = m_robotTyFilter.filter(m_arucoDetector.m_ownRobotTvecTableFrame[1]);
+	float robotRzCosFiltered = m_robotRxCosFilter.filter(cos(m_arucoDetector.m_ownRobotRvecTableFrame[2]));
+	float robotRzSinFiltered = m_robotRxSinFilter.filter(sin(m_arucoDetector.m_ownRobotRvecTableFrame[2]));
+	float robotRzFiltered = acos(robotRzCosFiltered);
+	if (robotRzSinFiltered < 0.f)
+		robotRzFiltered = -robotRzFiltered;
+	
 	#ifdef PLOT_ENABLED
 		m_dataPlotter.m_figures["Table position"].addData({ m_arucoDetector.m_tableTvec[0], m_arucoDetector.m_tableTvec[1], m_arucoDetector.m_tableTvec[2] });
 		m_dataPlotter.m_figures["Table rotation"].addData({ m_arucoDetector.m_tableRvec[0], m_arucoDetector.m_tableRvec[1], m_arucoDetector.m_tableRvec[2] });
-		m_dataPlotter.m_figures["Own robot position"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2] });
-		m_dataPlotter.m_figures["Own robot rotation"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] });
-		m_dataPlotter.m_figures["Own robot position histogram"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2] });
-		m_dataPlotter.m_figures["Own robot rotation histogram"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] });
+		m_dataPlotter.m_figures["Own robot position"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2], robotTxFiltered, robotTyFiltered });
+		m_dataPlotter.m_figures["Own robot rotation"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2], robotRzFiltered });
+		//m_dataPlotter.m_figures["Own robot position histogram"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2] });
+		//m_dataPlotter.m_figures["Own robot rotation histogram"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] });
 	
 	#endif // PLOT_ENABLED
 	m_profiler.updateTimepoint(5);
 	
 	#ifdef COMMUNICATION_ENABLED
-		std::string message = fmt::format("A {} {} {}", m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] + 1.575f).c_str(); //TODO: remove 1.575f and make it cleaner
+		std::string message = fmt::format("A {} {} {}", robotTxFiltered, robotTyFiltered, robotRzFiltered + 1.575f).c_str(); //TODO: remove 1.575f and make it cleaner
 		//spdlog::info("Sending \"{}\" to the server", message);
 		send(m_clientSocket, message.c_str(), message.size(), 0);
 	#endif // COMMUNICATION_ENABLED

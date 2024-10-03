@@ -34,7 +34,9 @@
 	#include "dataPlotting/DataPlotter.hpp"
 	#include "dataPlotting/Figure.hpp"
 #endif // PLOT_ENABLED
+#include "filtering/NumericalFilter.hpp"
 #include "SpdlogUtils.hpp"
+
 
 std::function<int(cv::Mat)> processFrameFunction;
 class Main {
@@ -45,6 +47,12 @@ public:
 	#endif // PLOT_ENABLED
 	Camera m_camera = Camera(2304, 1296);
 	ArucoDetector m_arucoDetector = ArucoDetector(m_camera, m_profiler, BLUE_TEAM, 3);
+	
+	NumericalFilter m_robotTxFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
+	NumericalFilter m_robotTyFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
+	NumericalFilter m_robotRxCosFilter = NumericalFilter(filterACoefficients, filterBCoefficients, cos(0.f));
+	NumericalFilter m_robotRxSinFilter = NumericalFilter(filterACoefficients, filterBCoefficients, sin(0.f));
+	//NumericalFilter m_robotRzFilter(filterACoefficients, filterBCoefficients, 0.f);
 	
 	int m_iteration = 0;
 	int64 m_startingTick;

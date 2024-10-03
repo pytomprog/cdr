@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef CDR_DATAPROFILER_HPP
-#define CDR_DATAPROFILER_HPP
+#ifndef CDR_DATAPLOTTER_HPP
+#define CDR_DATAPLOTTER_HPP
 
 #include <map>
 #include <string>
@@ -25,4 +25,4 @@ public:
 	void saveDataToCsv();
 };
 
-#endif // CDR_DATAPROFILER_HPP
+#endif // CDR_DATAPLOTTER_HPP
