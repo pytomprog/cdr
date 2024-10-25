@@ -32,8 +32,9 @@
 	static std::unique_ptr<libcamera::CameraManager> libcameraCameraManager;
 	static libcamera::FrameBufferAllocator* allocatorPtr;
 	static EventLoop loop;
+	static bool running = true;
 #endif //ARM
-extern std::function<int(cv::Mat)> processFrameFunction;
+extern std::function<int(cv::Mat*)> processFrameFunction;
 
 class Camera {
 public:

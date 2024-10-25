@@ -6,6 +6,8 @@ ArucoDetector::ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam, i
 	m_dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
 	m_cvDetectorParams = cv::aruco::DetectorParameters();
 	m_cvDetectorParams.useAruco3Detection = false; //true;
+	//m_cvDetectorParams.cornerRefinementMethod = cv::aruco::CORNER_REFINE_NONE; //cv::aruco::CORNER_REFINE_SUBPIX;
+	//spdlog::info("corner refinement methods: actual: {}, none: {}, subpix: {}", (int)m_cvDetectorParams.cornerRefinementMethod, (int)cv::aruco::CORNER_REFINE_NONE, (int)cv::aruco::CORNER_REFINE_SUBPIX);
 	m_cvDetector = cv::aruco::ArucoDetector(m_dictionary, m_cvDetectorParams);
 	
 	m_tableAlreadyDetected = false;

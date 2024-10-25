@@ -1,15 +1,16 @@
 #include "aruco/ArucoUtils.hpp"
 
+float optimizationCoefficient = 1.f; // 1.f by default, lower is faster, higher it's more robust
 void improveFutureCropRectangle(cv::Mat& inputFrame, std::vector<cv::Point2f>& markerCorners, cv::Rect& futureCropRectangle) {
 	int minXCorner = std::min({ markerCorners[0].x, markerCorners[1].x, markerCorners[2].x, markerCorners[3].x });
 	int maxXCorner = std::max({ markerCorners[0].x, markerCorners[1].x, markerCorners[2].x, markerCorners[3].x });
 	int minYCorner = std::min({ markerCorners[0].y, markerCorners[1].y, markerCorners[2].y, markerCorners[3].y });
 	int maxYCorner = std::max({ markerCorners[0].y, markerCorners[1].y, markerCorners[2].y, markerCorners[3].y });
 	//std::cout << "minXCorner: " << minXCorner << ", maxXCorner: " << maxXCorner << ", minYCorner: " << minYCorner << ", maxYCorner: " << maxYCorner << std::endl;
-	int x = 2 * minXCorner - maxXCorner;
-	int y = 2 * minYCorner - maxYCorner;
-	int width = 3 * (maxXCorner - minXCorner);
-	int height = 3 * (maxYCorner - minYCorner);
+	int x = (1 + optimizationCoefficient) * minXCorner - optimizationCoefficient * maxXCorner;
+	int y = (1 + optimizationCoefficient) * minYCorner - optimizationCoefficient * maxYCorner;
+	int width = (1 + 2 * optimizationCoefficient) * (maxXCorner - minXCorner);
+	int height = (1 + 2 * optimizationCoefficient) * (maxYCorner - minYCorner);
 	int correctedX = std::clamp(x, 0, inputFrame.cols);
 	int correctedY = std::clamp(y, 0, inputFrame.rows);
 	int correctedWidth = std::clamp(width - (correctedX - x), 0, inputFrame.cols - correctedX);
@@ -57,6 +58,11 @@ cv::Mat tableMarkers3dPoints(std::vector<int> markersId) {
 		case 23:
 			basePosition = cv::Vec3f(2250.f, 500.f, 0.f);
 			break;
+			
+		// WARNING: THIS IS ONLY FOR VILLAGE DES SCIENCES
+		/*case 22:
+			basePosition = cv::Vec3f(1000.f, 1000.f, 0.f);
+			break;*/
 		default:
 			break;
 		}
@@ -85,6 +91,26 @@ cv::Mat table3dPoints() {
 	points.ptr<cv::Vec3f>(0)[13] = cv::Vec3f(0.f, 2000.f, 0.f);
 	points.ptr<cv::Vec3f>(0)[14] = cv::Vec3f(0.f, 2000.f, 70.f);
 	points.ptr<cv::Vec3f>(0)[15] = cv::Vec3f(0.f, 0.f, 70.f);
+	
+	// WARNING: THIS IS ONLY FOR VILLAGE DES SCIENCES
+	/*cv::Mat points = cv::Mat(16, 1, CV_32FC3);
+	points.ptr<cv::Vec3f>(0)[0] = cv::Vec3f(0.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[1] = cv::Vec3f(2000.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[2] = cv::Vec3f(2000.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[3] = cv::Vec3f(0.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[4] = cv::Vec3f(0.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[5] = cv::Vec3f(0.f, 0.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[6] = cv::Vec3f(2000.f, 0.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[7] = cv::Vec3f(2000.f, 0.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[8] = cv::Vec3f(2000.f, 0.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[9] = cv::Vec3f(2000.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[10] = cv::Vec3f(2000.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[11] = cv::Vec3f(2000.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[12] = cv::Vec3f(0.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[13] = cv::Vec3f(0.f, 2000.f, 0.f);
+	points.ptr<cv::Vec3f>(0)[14] = cv::Vec3f(0.f, 2000.f, 70.f);
+	points.ptr<cv::Vec3f>(0)[15] = cv::Vec3f(0.f, 0.f, 70.f);*/
+	
 	return points;
 }
 
