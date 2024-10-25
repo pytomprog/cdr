@@ -3,9 +3,9 @@ add_rules("mode.debug", "mode.release")
 
 add_includedirs("include", "src")
 
-add_requires("sfml", "imgui-sfml")
+add_requires("sfml", "imgui-sfml 2.5")
 
-set_symbols("debug")
+--set_symbols("debug")
 
 set_languages("clatest", "cxxlatest")
 

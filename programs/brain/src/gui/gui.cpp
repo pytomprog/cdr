@@ -54,9 +54,16 @@ void GraphicalUserInterface::homeMenuConfig() {
 void GraphicalUserInterface::periphericalsConfigRoutine() {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
     ImGui::Begin("HAL configuration", 0, ImGuiWindowFlags_AlwaysAutoResize);
-    ImGui::Checkbox("Camera connected", &m_world.m_ownRobot.m_periphericalsConfig.cameraConnected);
-    ImGui::Checkbox("Rolling base connected", &m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected);
-    ImGui::Checkbox("Arm connected", &m_world.m_ownRobot.m_periphericalsConfig.armConnected);
+    ImGui::Checkbox("Enable camera", &m_world.m_ownRobot.m_periphericalsConfig.cameraEnabled);
+    ImGui::Text("Camera status: ");
+    ImGui::SameLine();
+    if (m_world.m_ownRobot.m_cameraConnected) {
+		ImGui::TextColored(ImColor(0, 255, 0, 255), "Connected");
+	} else {
+		ImGui::TextColored(ImColor(255, 0, 0, 255), "Disconnected");
+    }
+    ImGui::Checkbox("Enable rolling base", &m_world.m_ownRobot.m_periphericalsConfig.rollingBaseEnabled);
+    ImGui::Checkbox("Enable arm", &m_world.m_ownRobot.m_periphericalsConfig.armEnabled);
     ImGui::Checkbox("Enable gamepad", &m_gamepadEnabled);
 	ImGui::End();
 }
@@ -64,7 +71,7 @@ void GraphicalUserInterface::periphericalsConfigRoutine() {
 void GraphicalUserInterface::cameraRoutine() {
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Camera", 0, ImGuiWindowFlags_AlwaysAutoResize);
-	if (m_world.m_ownRobot.m_periphericalsConfig.cameraConnected) {
+	if (m_world.m_ownRobot.m_periphericalsConfig.cameraEnabled) {
 		/*float x = m_ownRobot.m_pose.m_position.m_x;
 		float y = m_ownRobot.m_pose.m_position.m_y;
 		float orientation = m_ownRobot.m_pose.m_orientation;
@@ -89,17 +96,18 @@ void GraphicalUserInterface::cameraRoutine() {
 }
 
 void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
-	static int mode = 2;
+	int mode = (int)m_world.m_ownRobot.m_ownRobotRollingBaseMode;
 	const char* modesList[] =
 	{
 		"Individual motor speeds control",
 		"dx dy dtheta control",
+		"Gamepad control",
 		"Position control"
 	};
 	
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Rolling base", 0, ImGuiWindowFlags_AlwaysAutoResize);
-	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected) {
+	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseEnabled) {
 		ImGui::Checkbox("Enable motors", &m_world.m_ownRobot.m_motorsEnabled);
 		ImGui::Checkbox("Enable obstacle avoidance", &m_world.m_ownRobot.m_obstacleAvoidance);
 		ImGui::Combo("Modes", &mode, modesList, IM_ARRAYSIZE(modesList));
@@ -116,17 +124,30 @@ void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
 				}
 				break;
 			case DX_DY_DTHETA_CONTROL:
-				if (m_gamepadEnabled){
-					m_world.m_ownRobot.m_dXTarget = (sf::Joystick::getAxisPosition(0, sf::Joystick::R) - sf::Joystick::getAxisPosition(0, sf::Joystick::Z))/2.f;
-					m_world.m_ownRobot.m_dYTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::X);
-					m_world.m_ownRobot.m_dThetaTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::U);
-				}
-				ImGui::SliderInt("Taget dX", &m_world.m_ownRobot.m_dXTarget, -100, 100);
-				ImGui::SliderInt("Target dY", &m_world.m_ownRobot.m_dYTarget, -100, 100);
-				ImGui::SliderInt("Target dTheta", &m_world.m_ownRobot.m_dThetaTarget, -100, 100);
+				ImGui::SliderInt("Max speed percentage", &m_world.m_ownRobot.m_maxSpeedPercentage, 0, 100);
+				ImGui::SliderInt("Taget dX", &m_world.m_ownRobot.m_dXTarget, -1000, 1000);
+				ImGui::SliderInt("Target dY", &m_world.m_ownRobot.m_dYTarget, -1000, 1000);
+				ImGui::SliderInt("Target dTheta", &m_world.m_ownRobot.m_dThetaTarget, -20, 20);
 				if (ImGui::Button("Stop") || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 					m_world.m_ownRobot.m_dXTarget = 0;
 					m_world.m_ownRobot.m_dYTarget = 0;
+					m_world.m_ownRobot.m_dThetaTarget = 0;
+				}
+
+				break;
+			case GAMEPAD_CONTROL:
+				if (m_gamepadEnabled){
+					m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget = (sf::Joystick::getAxisPosition(0, sf::Joystick::R) - sf::Joystick::getAxisPosition(0, sf::Joystick::Z))/2.f*10.f;
+					m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::X)*10.f;
+					m_world.m_ownRobot.m_dThetaTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::U)/50.f;
+				}
+				ImGui::SliderInt("Gamepad max speed percentage", &m_world.m_ownRobot.m_gamepadMaxSpeedPercentage, 0, 100);
+				ImGui::SliderInt("Primary axis speed", &m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget, -1000, 1000);
+				ImGui::SliderInt("Secondary axis speed", &m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget, -1000, 1000);
+				ImGui::SliderInt("Target dTheta", &m_world.m_ownRobot.m_dThetaTarget, -20, 20);
+				if (ImGui::Button("Stop") || sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+					m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget = 0;
+					m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget = 0;
 					m_world.m_ownRobot.m_dThetaTarget = 0;
 				}
 
@@ -136,6 +157,20 @@ void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
 				ImGui::SliderFloat("Taget X", &m_world.m_ownRobot.m_targetPose.m_position.m_x, X_MIN_BORDER, X_MAX_BORDER, "%.1f");
 				ImGui::SliderFloat("Target Y", &m_world.m_ownRobot.m_targetPose.m_position.m_y, Y_MIN_BORDER, Y_MAX_BORDER, "%.1f");
 				ImGui::SliderFloat("Target Theta", &m_world.m_ownRobot.m_targetPose.m_orientation, -PI, PI);
+				
+				ImGui::Text("Coefficients");
+				ImGui::Text("X & Y");
+				ImGui::InputFloat("xyP", &m_world.m_ownRobot.m_xyPCoefficient, -1000.f, 1000.f, "%.6f");
+				ImGui::InputFloat("xyI", &m_world.m_ownRobot.m_xyICoefficient, -1000.f, 1000.f, "%.6f");
+				ImGui::InputFloat("xyD", &m_world.m_ownRobot.m_xyDCoefficient, -1000.f, 1000.f, "%.6f");
+				ImGui::Text("Theta");
+				ImGui::InputFloat("thetaP", &m_world.m_ownRobot.m_thetaPCoefficient, -1000.f, 1000.f, "%.6f");
+				ImGui::InputFloat("thetaI", &m_world.m_ownRobot.m_thetaICoefficient, -1000.f, 1000.f, "%.6f");
+				ImGui::InputFloat("thetaD", &m_world.m_ownRobot.m_thetaDCoefficient, -1000.f, 1000.f, "%.6f");
+				
+				if (ImGui::Button("Reset error integration")) {
+					m_world.m_ownRobot.m_errorPoseIntegrated = Pose2f(Vec2f(0.f, 0.f), 0.f);
+				}
 
 				break;
 		}
@@ -161,7 +196,7 @@ void GraphicalUserInterface::ownRobotArmRoutine() {
 
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Arm", 0, ImGuiWindowFlags_AlwaysAutoResize);
-	if (m_world.m_ownRobot.m_periphericalsConfig.armConnected) {
+	if (m_world.m_ownRobot.m_periphericalsConfig.armEnabled) {
 		ImGui::Text("Arm 1:");
 		ImGui::Checkbox("Immediate command 1", &m_world.m_ownRobot.m_arm1.m_command.immediate);
 		ImGui::Combo("Command 1", &m_world.m_ownRobot.m_arm1.m_command.commandType, commandsList, IM_ARRAYSIZE(commandsList));
@@ -228,13 +263,33 @@ void GraphicalUserInterface::update() {
 	// Actuators routines
 	ownRobotRollingBaseRoutine();
 	ownRobotArmRoutine();
+	
+	// TODO: Make it cleaner: Load texture only one time, not every frame
+	/*sf::Texture boardTexture;
+	boardTexture.loadFromFile("vinyle.png");
+	sf::RectangleShape boardShape(sf::Vector2f(WIDTH, HEIGHT));
+	boardShape.setTexture(&boardTexture);
+	m_window.draw(boardShape);*/
 
-	m_world.m_ownRobot.m_currentPose.update();
-	m_world.m_ownRobot.m_currentPose.draw(m_window);
-	m_world.m_advRobot.m_currentPose.update();
-	m_world.m_advRobot.m_currentPose.draw(m_window);
-	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseConnected) {
+	if (m_world.m_ownRobot.m_periphericalsConfig.rollingBaseEnabled) {
 		m_world.m_ownRobot.m_targetPose.update();
 		m_world.m_ownRobot.m_targetPose.draw(m_window);
 	}
+	
+	sf::Vertex commandSpeedVectorShape[2];
+	commandSpeedVectorShape[0] = sf::Vertex(m_world.m_ownRobot.m_currentPose.m_position.toSfmlVector(), sf::Color::Yellow);
+	commandSpeedVectorShape[1] = sf::Vertex((m_world.m_ownRobot.m_currentPose.m_position + m_world.m_ownRobot.m_commandSpeed.m_position).toSfmlVector(), sf::Color::Yellow);
+	m_window.draw(commandSpeedVectorShape, 2, sf::Lines);
+	
+	sf::Vertex currentSpeedVectorShape[2]; // TODO: Make it cleaner; eg: create a Vec2f method
+	currentSpeedVectorShape[0] = sf::Vertex(m_world.m_ownRobot.m_currentPose.m_position.toSfmlVector(), sf::Color::Yellow);
+	currentSpeedVectorShape[1] = sf::Vertex((m_world.m_ownRobot.m_currentPose.m_position + m_world.m_ownRobot.m_currentSpeed.m_position).toSfmlVector(), sf::Color::Green);
+	m_window.draw(currentSpeedVectorShape, 2, sf::Lines);
+	
+	m_world.m_ownRobot.m_currentPose.update();
+	m_world.m_ownRobot.m_currentPose.draw(m_window);
+	
+	
+	m_world.m_advRobot.m_currentPose.update();
+	m_world.m_advRobot.m_currentPose.draw(m_window);
 }

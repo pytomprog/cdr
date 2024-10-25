@@ -21,5 +21,6 @@ void initStrategies(std::map<std::string, Strategy*>& strategies, std::vector<st
 class BlueHomologation : public Strategy { public: BlueHomologation(World& world); void routine(); };
 class YellowHomologation : public Strategy { public: YellowHomologation(World& world); void routine(); };
 class ArmTest : public Strategy { public: ArmTest(World& world); void routine(); };
+class Demo : public Strategy { public: Demo(World& world); void routine(); };
 
 #endif //STRATEGIES

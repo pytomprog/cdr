@@ -24,7 +24,7 @@
 #include <sys/types.h>
 
 #define BCK2835_LIBRARY_BUILD
-#include "bcm2835.h"
+#include "hal/bcm2835.h"
 
 /* This define enables a little test program (by default a blinking output on pin RPI_GPIO_PIN_11)
 // You can do some safe, non-destructive testing on any platform with:

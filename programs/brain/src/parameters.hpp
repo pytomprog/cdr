@@ -9,6 +9,8 @@
 
 constexpr float PI = 3.14159265358979;
 
+constexpr unsigned int WINDOW_WIDTH = 1900, WINDOW_HEIGHT = 1000u;
+
 constexpr float X_MIN_BORDER = 0.f, X_MAX_BORDER = 3000.f, Y_MIN_BORDER = 0.f, Y_MAX_BORDER = 2000.f;
 
 constexpr unsigned int WIDTH = 1500u, HEIGHT = 1000u;
