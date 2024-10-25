@@ -11,11 +11,12 @@
 class HardwareAbstractionLayer {
 public:
 	World& m_world;
+	
+	double m_deltaTime = 0.1f; //"Random" value
 
 	int m_cameraServerSocket; 
     sockaddr_in m_cameraServerAddress;
 	int m_cameraClientSocket;
-	bool m_cameraClientConnected;
 
 	HardwareAbstractionLayer(World& world);
 	

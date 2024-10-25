@@ -21,6 +21,9 @@
 
 void halLoop(HardwareAbstractionLayer& hal) {
     using namespace std::chrono_literals;
+    using clock = std::chrono::high_resolution_clock;
+    using time_point = std::chrono::time_point<clock>;
+    
     if (!bcm2835_init()) {
         std::cout << "bcm2835_init failed. Are you running as root??" << std::endl;
         return;
@@ -31,14 +34,22 @@ void halLoop(HardwareAbstractionLayer& hal) {
     }
 
     bcm2835_i2c_setClockDivider(I2C_CLOCK_DIVIDER_VALUE);
-
+    
+    time_point previousTime = clock::now();
     while (true) {
+        time_point currentTime = clock::now();
+        std::chrono::duration<double> timeDifference = currentTime - previousTime;
+        hal.m_deltaTime = timeDifference.count();
+        //std::cout << "hal deltaTime: " << hal.m_deltaTime << std::endl;
+        
         //halMutex.lock();
         hal.ownRobotCameraRoutine();
         hal.ownRobotRollingBaseRoutine();
         hal.ownRobotArmRoutine();
         //halMutex.unlock();
         //std::this_thread::sleep_for(20ms);
+        
+        previousTime = currentTime;
     }
 
     bcm2835_i2c_end();
@@ -47,14 +58,14 @@ void halLoop(HardwareAbstractionLayer& hal) {
 }
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(WIDTH, HEIGHT), "Core");
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Core");
     ImGui::SFML::Init(window);
 
     sf::Clock deltaClock;
 
-    OwnRobot ownRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Green), 0.f), 200.f, true);
+    OwnRobot ownRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Green), 0.f), 200.f, false); // TODO: Put it back to true, this is for test purpose only
     Obstacle advRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Yellow), 0.f), 500.f);
-    World world(STRATEGY_MODE, "Yellow homologation", ownRobot, advRobot);
+    World world(STRATEGY_MODE, "Demo", ownRobot, advRobot);
 
     std::map<std::string, Strategy*> strategies;
     std::vector<std::string> strategiesNames;
