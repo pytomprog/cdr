@@ -34,11 +34,11 @@ void Circle::update(float robotRadius) { //TODO: Change name because it updates 
 	
 	m_center.updatePosition();
 
-	m_selfShape.setPosition(m_center.m_x * ZOOM, m_center.m_y * ZOOM);
+	m_selfShape.setPosition(m_center.toSfmlVector());
 	m_selfShape.setRadius(m_selfRadius * ZOOM - CIRCLE_OUTLINE_THICKNESS);
 	m_selfShape.setOrigin(m_selfRadius * ZOOM - CIRCLE_OUTLINE_THICKNESS, m_selfRadius * ZOOM - CIRCLE_OUTLINE_THICKNESS);
 
-	m_collisionShape.setPosition(m_center.m_x * ZOOM, m_center.m_y * ZOOM);
+	m_collisionShape.setPosition(m_center.toSfmlVector());
 	m_collisionShape.setRadius(m_collisionRadius * ZOOM);
 	m_collisionShape.setOrigin(m_collisionRadius * ZOOM, m_collisionRadius * ZOOM);
 }

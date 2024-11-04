@@ -33,10 +33,6 @@ void GraphicalUserInterface::homeMenuConfig() {
 			m_world.m_ownRobot.m_periphericalsConfig = OwnRobotPeriphericalsConfig{ true, true, true };
 		}
 
-		if (ImGui::Button("Restart strategy")) {
-			m_world.m_strategyStep = 0;
-		}
-
 		static int strategyChoice = std::find(m_strategiesNames.begin(), m_strategiesNames.end(), m_world.m_strategyName) - m_strategiesNames.begin();
 		ImGui::Combo("Strategy", &strategyChoice, m_strategiesNamesCharPtr, m_strategiesNames.size());
 		std::string newStrategyName = m_strategiesNames[strategyChoice];
@@ -44,6 +40,18 @@ void GraphicalUserInterface::homeMenuConfig() {
 			m_world.m_strategyName = newStrategyName;
 			m_world.m_strategyStep = 0;
 			m_world.m_ownRobot.m_periphericalsConfig = OwnRobotPeriphericalsConfig{ true, true, true };
+		}
+		
+		if (ImGui::Button("Restart strategy")) {
+			m_world.m_strategyStep = 0;
+		}
+		
+		if (ImGui::Button("Previous step")) {
+			m_world.m_strategyStep--;
+		}
+		
+		if (ImGui::Button("Next step")) {
+			m_world.m_strategyStep++;
 		}
 
 		ImGui::Text("Current step: %.1i", m_world.m_strategyStep);
