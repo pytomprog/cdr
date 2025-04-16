@@ -22,8 +22,14 @@ void StrategyStateMachine::setNextState(std::shared_ptr<StrategyState> nextState
 	m_nextStatePtr = nextStatePtr;
 }
 
-unsigned int StrategyStateMachine::getStepsOnSameState() {
-	return m_stepsOnSameState;
+unsigned int StrategyStateMachine::getStateIndexByPtrValue(std::shared_ptr<StrategyState> statePtr) {
+	auto it = std::find(m_statePtrs.begin(), m_statePtrs.end(), statePtr);
+	if (it == m_statePtrs.end()) {
+		std::cerr << "State with pointer value " << statePtr << " isn't in the state machine states list !" << std::endl;
+		return 0;
+	} else {
+		return std::distance(m_statePtrs.begin(), it);
+	}
 }
 
 void StrategyStateMachine::routine() {
@@ -40,11 +46,16 @@ void StrategyStateMachine::routine() {
 	m_stepsOnSameState++;
 }
 
+unsigned int StrategyStateMachine::getStepsOnSameState() {
+	return m_stepsOnSameState;
+}
+
 void StrategyStateMachine::saveStatesToYaml(const std::string& filename) {
 	YAML::Node rootNode;
 	rootNode["states"] = YAML::Node(YAML::NodeType::Sequence);
-	for (const auto& statePtr : m_statePtrs) {
-		rootNode["states"].push_back(statePtr->serializeToYaml());
+	for (size_t stateIndex = 0; stateIndex < m_statePtrs.size(); stateIndex++) {
+		const auto& statePtr = m_statePtrs[stateIndex];
+		rootNode["states"].push_back(statePtr->serializeToYaml(stateIndex));
 	}
 	std::ofstream fout(filename);
 	fout << rootNode;
@@ -54,20 +65,31 @@ void StrategyStateMachine::saveStatesToYaml(const std::string& filename) {
 void StrategyStateMachine::loadStatesFromYaml(const std::string& filename) {
 	YAML::Node rootNode = YAML::LoadFile(filename);
 	m_statePtrs.clear();  // Remove any previous states
-
+	m_stateIdsToPtrs.clear();
+	
 	if (rootNode["states"]) {
 		for (const auto& node : rootNode["states"]) {
 			std::string type = node["type"].as<std::string>();
+			std::shared_ptr<StrategyState> newStatePtr;
 			if (type == "IdleState") {
-				addState(IdleState::createFromYaml(this, node));
+				newStatePtr = IdleState::createFromYaml(this, node);
 			} else if (type == "TestState") {
-				addState(TestState::createFromYaml(this, node));
+				newStatePtr = TestState::createFromYaml(this, node);
 			} else if (type == "TestState2") {
-				addState(TestState2::createFromYaml(this, node));
+				newStatePtr = TestState2::createFromYaml(this, node);
 			} else {
 				std::cerr << "Unknown state type: " << type << std::endl;
+				continue;
 			}
+			addState(newStatePtr);
+			unsigned int newStateIdInYaml = node["id"].as<unsigned int>();
+			m_stateIdsToPtrs[newStateIdInYaml] = newStatePtr;
 		}
+		
+		for (const auto& statePtr: m_statePtrs) {
+			statePtr->updateOutputLinks();
+		}
+		
+		std::cout << "States loaded from " << filename << std::endl;
 	}
-	std::cout << "States loaded from " << filename << std::endl;
 }

@@ -42,17 +42,17 @@ int main() {
 	
 	/*stateMachine.addState(std::make_shared<TestState>(&stateMachine));
 	stateMachine.addState(std::make_shared<TestState2>(&stateMachine));
-	stateMachine.addState(std::make_shared<IdleState>(&stateMachine));*/
+	stateMachine.addState(std::make_shared<IdleState>(&stateMachine));
+	
+	std::static_pointer_cast<TestState>(stateMachine.m_statePtrs[0])->m_nextStatePtr = stateMachine.m_statePtrs[1];
+	std::static_pointer_cast<TestState2>(stateMachine.m_statePtrs[1])->m_nextStatePtr = stateMachine.m_statePtrs[2];
+	
+	stateMachine.saveStatesToYaml("testStrategy.yaml");*/
 	
 	stateMachine.loadStatesFromYaml("testStrategy.yaml");
 	/*std::cout << "States: " << stateMachine.m_statePtrs.size() << std::endl;
 	for (size_t stateId = 0; stateId < stateMachine.m_statePtrs.size(); stateId++)
 		std::cout << "State " << stateId << " type: " << stateMachine.m_statePtrs[stateId]->getTypeString() << std::endl;*/
-	
-	std::static_pointer_cast<TestState>(stateMachine.m_statePtrs[0])->m_nextStatePtr = stateMachine.m_statePtrs[1];
-	std::static_pointer_cast<TestState2>(stateMachine.m_statePtrs[1])->m_nextStatePtr = stateMachine.m_statePtrs[2];
-	
-	//stateMachine.saveStatesToYaml("testStrategy.yaml");
 	
 	stateMachine.setNextState(stateMachine.m_statePtrs[0]);
 	while (1) {
