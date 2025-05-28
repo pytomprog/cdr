@@ -1,9 +1,17 @@
+#include <Arduino.h>
 #include <Servo.h>
 #include <Wire.h>
 
-#define SERVO1_PIN 9
-#define SERVO2_PIN 10
-#define SERVO3_PIN 11
+#define I2C_SDA_PIN 12
+#define I2C_SCL_PIN 13
+
+#define COLUMN_VACUUM1_PIN 2
+#define COLUMN_VACUUM2_PIN 3
+#define COLUMN_VACUUM3_PIN 6
+#define COLUMN_VACUUM4_PIN 7
+#define PLANK_VACUUM1_PIN 4
+#define PLANK_VACUUM2_PIN 5
+#define PLANK_SERVO_PIN 11
 
 #define MAX_SEQUENCE_LENGTH 32
 #define MAX_QUEUE_LENGTH 32
@@ -24,8 +32,8 @@ Command defaultHandPos {4, 6};
 
 int memorizedPositions[][6] = {{0, 0, 0}, {180, 180, 180}, {90, 82, 105}, {90, 144, 36}, {90, 144, 105}, {90, 82, 36}, {100, 82, 105}};
 
-Sequence memorizedSequences[] = {Sequence{4, {Command{4, 0}, Command{0, 5}, Command{4, 1}, Command{0, 5}}},
-                                 Sequence{4, {Command{5, 0}, Command{5, 0}, Command{5, 0}, Command{5, 0}}},};
+Sequence memorizedSequences[] = {}; // {Sequence{4, {Command{4, 0}, Command{0, 5}, Command{4, 1}, Command{0, 5}}},
+                                 //Sequence{4, {Command{5, 0}, Command{5, 0}, Command{5, 0}, Command{5, 0}}},};
 
 Command immediateCommand;
 bool isImmediateCommand;
@@ -35,18 +43,16 @@ Command commandQueue[MAX_QUEUE_LENGTH];
 
 bool stopped = false;
 
-Servo servo1;
-Servo servo2;
-Servo servo3;
+Servo plankServo;
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
-  servo1.attach(SERVO1_PIN);
-  servo2.attach(SERVO2_PIN);
-  servo3.attach(SERVO3_PIN);
+  plankServo.attach(PLANK_SERVO_PIN);
 
   Serial.begin(115200);
+  Wire.setSDA(I2C_SDA_PIN);
+  Wire.setSCL(I2C_SCL_PIN);
   Wire.begin(0x11); // join I2C bus with address 0x01
   Wire.onReceive(i2cReceiverHandler);
 }
@@ -87,7 +93,6 @@ void i2cReceiverHandler(int howMany) {
     } else {
       addCommandToQueue(Command{index, argument});
     }
-<<<<<<< Updated upstream
     #ifdef SERIAL_ENABLED
       Serial.println();
     #endif //SERIAL_ENABLED
@@ -96,11 +101,6 @@ void i2cReceiverHandler(int howMany) {
     Serial.println();
   #endif //SERIAL_ENABLED
   digitalWrite(LED_BUILTIN, LOW);
-=======
-    Wire.println();
-  }
-  Wire.println();
->>>>>>> Stashed changes
 }
 
 String byteToString(byte b) {
@@ -135,13 +135,9 @@ void executeCommand(Command command) {
     int index = command.index;
     int argument = command.argument;
 
-<<<<<<< Updated upstream
     #ifdef SERIAL_ENABLED
       Serial.println("Executing command: index: " + String(index) + ", argument: " + String(argument));
     #endif //SERIAL_ENABLED
-=======
-    Wire.println("Executing command: index: " + String(index) + ", argument: " + String(argument));
->>>>>>> Stashed changes
 
     switch (index) {
       case 0: //stop
@@ -152,28 +148,24 @@ void executeCommand(Command command) {
           delay(argument*200);
         }
         break;
-      case 1:   //set mot 1
-        servo1.write(argument*8);
+      case 1:   //set plank servo mot pos
+        plankServo.write(argument*8);
         break;
       case 2:   //set mot 2
-        servo2.write(argument*8);
+        //servo2.write(argument*8);
         break;
       case 3:   //set mot 3
-        servo3.write(argument*8);
+        //servo3.write(argument*8);
         break;
       case 4:   //set memorized pos (every motors)
-        servo1.write(memorizedPositions[argument][0]);
+        /*servo1.write(memorizedPositions[argument][0]);
         servo2.write(memorizedPositions[argument][1]);
-        servo3.write(memorizedPositions[argument][2]);
+        servo3.write(memorizedPositions[argument][2]);*/
         break;
       case 5:
-<<<<<<< Updated upstream
         #ifdef SERIAL_ENABLED
           Serial.println("Playing sequence " + String(argument));
         #endif //SERIAL_ENABLED
-=======
-        Wire.println("Playing sequence " + String(argument));
->>>>>>> Stashed changes
         playSequence(memorizedSequences[argument]);
         break;
       case 6:
@@ -185,13 +177,9 @@ void executeCommand(Command command) {
 }
 
 void playSequence(Sequence sequence){
-<<<<<<< Updated upstream
   #ifdef SERIAL_ENABLED
     Serial.println("Sequence size: " + String(sequence.length));
   #endif //SERIAL_ENABLED
-=======
-  Wire.println("Sequence size: " + String(sequence.length));
->>>>>>> Stashed changes
   for (int step = 0; step<sequence.length; step++){
     executeCommand(sequence.steps[step]);
   }
