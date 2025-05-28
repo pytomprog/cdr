@@ -1,11 +1,15 @@
+#include <Arduino.h>
 #include <Wire.h>
 
-#define MOTOR1_DIRECTION_PIN 6
-#define MOTOR2_DIRECTION_PIN 7
-#define MOTOR3_DIRECTION_PIN 8
-#define MOTOR1_PWM_PIN 9
-#define MOTOR2_PWM_PIN 10
-#define MOTOR3_PWM_PIN 11
+#define I2C_SDA_PIN 0
+#define I2C_SCL_PIN 1
+
+#define MOTOR1_IN1_PIN 3
+#define MOTOR1_IN2_PIN 2
+#define MOTOR2_IN1_PIN 5
+#define MOTOR2_IN2_PIN 4
+#define MOTOR3_IN1_PIN 7
+#define MOTOR3_IN2_PIN 6
 
 constexpr float SQRT3OVER2 = 0.8660254038f;
 
@@ -62,7 +66,7 @@ inline float wToPWM(float w) {
     if (w < 0)
       pwm = -pwm;
   }
-  return clamp(round(pwm), -255, 255);
+  return clamp((int)round(pwm), -255, 255);
 }
 
 
@@ -85,7 +89,7 @@ int getIntFromStream() {
   return value;
 }
 
-void i2cReceiverHandler() {
+void i2cReceiverHandler(int someUnusedParam) {
   pwm1 = 0;
   pwm2 = 0;
   pwm3 = 0;
@@ -148,9 +152,9 @@ void i2cReceiverHandler() {
       float percentageMax = getIntFromStream() / 100.f;
       //Serial.println("vX: " + String(vX) + ", vY: " + String(vY) + ", vTheta: " + String(vTheta) + ", %Max: " + String(percentageMax));
 
-      float w1 = (-vY - L*vTheta) / R;
-      float w2 = (SQRT3OVER2*vX + 0.5f*vY - L*vTheta) / R;
-      float w3 = (-SQRT3OVER2*vX + 0.5f*vY - L*vTheta) / R;
+      float w1 = (vY - L*vTheta) / R;
+      float w2 = (SQRT3OVER2*vX - 0.5f*vY - L*vTheta) / R;
+      float w3 = (-SQRT3OVER2*vX - 0.5f*vY - L*vTheta) / R;
       //Serial.println("Before correction: w1: " + String(w1) + ", w2: " + String(w2) + ", w3: " + String(w3));
 
       float wMax = percentageToW(percentageMax);
@@ -187,22 +191,23 @@ void i2cReceiverHandler() {
 }
 
 void setup() {
+  Wire.setSDA(I2C_SDA_PIN);
+  Wire.setSCL(I2C_SCL_PIN);
   Wire.begin(0x10);
   Serial.begin(115200);
 
-  pinMode(MOTOR1_PWM_PIN, OUTPUT);
-  pinMode(MOTOR2_PWM_PIN, OUTPUT);
-  pinMode(MOTOR3_PWM_PIN, OUTPUT);
-  analogWrite(MOTOR1_PWM_PIN, 0);
-  analogWrite(MOTOR2_PWM_PIN, 0);
-  analogWrite(MOTOR3_PWM_PIN, 0);
-
-  pinMode(MOTOR1_DIRECTION_PIN, OUTPUT);
-  pinMode(MOTOR2_DIRECTION_PIN, OUTPUT);
-  pinMode(MOTOR3_DIRECTION_PIN, OUTPUT);
-  digitalWrite(MOTOR1_DIRECTION_PIN, 0);
-  digitalWrite(MOTOR2_DIRECTION_PIN, 0);
-  digitalWrite(MOTOR3_DIRECTION_PIN, 0);
+  pinMode(MOTOR1_IN1_PIN, OUTPUT);
+  pinMode(MOTOR1_IN2_PIN, OUTPUT);
+  pinMode(MOTOR2_IN1_PIN, OUTPUT);
+  pinMode(MOTOR2_IN2_PIN, OUTPUT);
+  pinMode(MOTOR3_IN1_PIN, OUTPUT);
+  pinMode(MOTOR3_IN2_PIN, OUTPUT);
+  analogWrite(MOTOR1_IN1_PIN, 0);
+  analogWrite(MOTOR1_IN2_PIN, 0);
+  analogWrite(MOTOR2_IN1_PIN, 0);
+  analogWrite(MOTOR2_IN2_PIN, 0);
+  analogWrite(MOTOR3_IN1_PIN, 0);
+  analogWrite(MOTOR3_IN2_PIN, 0);
 
   Wire.onReceive(i2cReceiverHandler);
 }
@@ -215,11 +220,25 @@ void loop() {
   }
   
   //Serial.println("Motor 1: " + String(pwm1) + ", motor 2: " + String(pwm2) + ", motor 3: " + String(pwm3));
-  digitalWrite(MOTOR1_DIRECTION_PIN, (pwm1 < 0)); //pwm1
-  digitalWrite(MOTOR2_DIRECTION_PIN, (pwm2 < 0));
-  digitalWrite(MOTOR3_DIRECTION_PIN, (pwm3 < 0));
-  analogWrite(MOTOR1_PWM_PIN, abs(pwm1));
-  analogWrite(MOTOR2_PWM_PIN, abs(pwm2));
-  analogWrite(MOTOR3_PWM_PIN, abs(pwm3));
+  if (pwm1 >= 0) {
+    analogWrite(MOTOR1_IN1_PIN, 1023);
+    analogWrite(MOTOR1_IN2_PIN, 255-abs(pwm1));
+  } else {
+    analogWrite(MOTOR1_IN1_PIN, 255-abs(pwm1));
+    analogWrite(MOTOR1_IN2_PIN, 1023);
+  }
+  if (pwm2 >= 0) {
+    analogWrite(MOTOR2_IN1_PIN, 1023);
+    analogWrite(MOTOR2_IN2_PIN, 255-abs(pwm2));
+  } else {
+    analogWrite(MOTOR2_IN1_PIN, 255-abs(pwm2));
+    analogWrite(MOTOR2_IN2_PIN, 1023);
+  }if (pwm3 >= 0) {
+    analogWrite(MOTOR3_IN1_PIN, 1023);
+    analogWrite(MOTOR3_IN2_PIN, 255-abs(pwm3));
+  } else {
+    analogWrite(MOTOR3_IN1_PIN, 255-abs(pwm3));
+    analogWrite(MOTOR3_IN2_PIN, 1023);
+  }
   //delay(100);
 }
