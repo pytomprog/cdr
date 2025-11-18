@@ -5,6 +5,7 @@
 #include <SFML/System/Clock.hpp>
 #include <vector>
 #include <string>
+#include <cmath>
 
 #include "parameters.hpp"
 #include "world/World.hpp"

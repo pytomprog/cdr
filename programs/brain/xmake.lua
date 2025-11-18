@@ -91,7 +91,12 @@ target("core")
     add_headerfiles("include/strategy/**.hpp")
     add_headerfiles("src/strategy/**.hpp")
 
-    add_packages("sfml", "imgui-sfml")
+    add_files("src/nodalStrategy/**.cpp")
+    add_headerfiles("include/nodalStrategy/**.hpp")
+    add_headerfiles("src/nodalStrategy/**.hpp")
+    remove_files("src/nodalStrategy/main.cpp")
+
+    add_packages("sfml", "imgui-sfml", "imgui-node-editor", "yaml-cpp")
 
     --set_policy("build.sanitizer.thread", true) -- Enable thread sanitizer to detect data races
     --add_cxflags("-fsanitize=thread", "-ftrapv")

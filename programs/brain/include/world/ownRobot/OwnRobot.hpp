@@ -26,6 +26,7 @@ public:
 	Pose2f m_currentSpeed;
 	Pose2f m_targetPose;
 	Pose2f m_commandSpeed;
+	Pose2f m_orientedCommandSpeed;
 	Pose2f m_errorPoseIntegrated;
 	float m_radius;
 	bool m_obstacleAvoidance;
@@ -46,7 +47,7 @@ public:
 	float m_xyPCoefficient, m_xyICoefficient, m_xyDCoefficient;
 	float m_thetaPCoefficient, m_thetaICoefficient, m_thetaDCoefficient;
 
-	Arm m_arm1, m_arm2;
+	Arm m_arm1;
 
 	OwnRobot(Pose2f initialPose = Pose2f(), float radius = 30.f, bool obstacleAvoidance = false);
 };

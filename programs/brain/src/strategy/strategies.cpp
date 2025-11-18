@@ -17,6 +17,7 @@ void initStrategies(std::map<std::string, Strategy*>& strategies, std::vector<st
     strategies.insert(std::make_pair("Yellow homologation", new YellowHomologation(world)));
     strategies.insert(std::make_pair("Arm test", new ArmTest(world)));
     strategies.insert(std::make_pair("Demo", new Demo(world)));
+    strategies.insert(std::make_pair("Nodal strategy", new NodalStrategy(world)));
 
     strategiesNames.clear();
     for(auto const& strategy: strategies) {
@@ -108,11 +109,25 @@ void YellowHomologation::routine() {
             }
             break;  
         case 3:
-            m_world.m_ownRobot.m_targetPose = Pose2f(Vec2f(200.f, 200.f), 0.f);
+            m_world.m_ownRobot.m_targetPose = Pose2f(Vec2f(400.f, 280.f), 0.f);
             m_world.m_ownRobot.m_motorsEnabled = true;
             m_world.m_strategyStep++;
             break;
         case 4:
+            if (getDistance(m_world.m_ownRobot.m_currentPose.m_position, m_world.m_ownRobot.m_targetPose.m_position) < 20) {
+                m_world.m_ownRobot.m_targetPose = Pose2f(Vec2f(900.f, 280.f), 0.f);
+                m_world.m_ownRobot.m_motorsEnabled = true;
+                m_world.m_strategyStep++;
+            }
+            break;
+        case 5:
+            if (getDistance(m_world.m_ownRobot.m_currentPose.m_position, m_world.m_ownRobot.m_targetPose.m_position) < 20) {
+                m_world.m_ownRobot.m_targetPose = Pose2f(Vec2f(400.f, 280.f), 0.f);
+                m_world.m_ownRobot.m_motorsEnabled = true;
+                m_world.m_strategyStep++;
+            }
+            break;
+        case 6:
             if (getDistance(m_world.m_ownRobot.m_currentPose.m_position, m_world.m_ownRobot.m_targetPose.m_position) < 20) {
                 m_world.m_ownRobot.m_motorsEnabled = false;
                 std::cout << "Match finished" << std::endl;
@@ -437,4 +452,20 @@ void Demo::routine() {
             }
             break;   
     }
+}
+
+NodalStrategy::NodalStrategy(World& world): Strategy(world), m_stateMachine(StrategyStateMachine(world)), m_debugGui(DebugGui(m_stateMachine)) {}
+
+void NodalStrategy::routine() {
+    if (m_stateMachine.m_statePtrs.size() > 0) {
+        m_stateMachine.setNextState(m_stateMachine.m_statePtrs[m_world.m_strategyStep]);
+
+        m_stateMachine.routine();
+
+        m_world.m_strategyStep = m_stateMachine.getStateIndexByPtrValue(m_stateMachine.m_nextStatePtr);
+    }
+}
+
+void NodalStrategy::guiRoutine(sf::RenderWindow& window) {
+    m_debugGui.update(window);
 }

@@ -1,9 +1,18 @@
 #pragma once
 
+#ifndef DEBUG_GUI
+#define DEBUG_GUI
+
+#include <iostream>
+#include <string>
+#include <memory>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/System/Clock.hpp>
 #include <imgui-node-editor/imgui_node_editor.h>
+
+#include "nodalStrategy/StrategyStateMachine.hpp"
+#include "nodalStrategy/StrategyStates.hpp"
 
 namespace NodeEditor = ax::NodeEditor;
 
@@ -31,16 +40,18 @@ struct Node;
 
 struct Pin {
     NodeEditor::PinId id;
-    ::Node* node;
+    NodeEditor::NodeId nodeId;
     std::string name;
     PinType type;
     PinKind kind;
 
     Pin(int _id, const char* _name, PinType _type):
-        id(_id), node(nullptr), name(_name), type(_type), kind(PinKind::Input) {}
+        id(_id), nodeId(0), name(_name), type(_type), kind(PinKind::Input) {}
 };
 
 struct Node {
+	std::shared_ptr<StrategyState> m_statePtr = nullptr;
+	
     NodeEditor::NodeId id;
     std::string name;
     std::vector<Pin> inputs;
@@ -82,11 +93,14 @@ public:
 	
 	NodeEditor::EditorContext* m_contextPtr = nullptr;
 	int m_nextId = 1;
-    std::vector<Node> m_nodes;
-    std::vector<Link> m_links;
+	std::vector<Node> m_nodes;
+	std::vector<Link> m_links;
 	int m_nextLinkId = 1000;
+	
+	StrategyStateMachine& m_stateMachine;
+	std::string m_strategyFilename = "testStrategy.yaml";
 
-	DebugGui();
+	DebugGui(StrategyStateMachine& stateMachine);
 	
 	int getNextId();
 	NodeEditor::LinkId getNextLinkId();
@@ -96,8 +110,21 @@ public:
 	void buildNode(Node* node);
 	void buildNodes();
 	
-	Node* spawnFirstNode();
-	Node* spawnSecondNode();
+	Node* spawnDemoNode();
+	Node* spawnIdleStateNode(std::shared_ptr<IdleState> statePtr = nullptr);
+	Node* spawnTestStateNode(std::shared_ptr<TestState> statePtr = nullptr);
+	Node* spawnStartStateNode(std::shared_ptr<StartState> statePtr = nullptr);
+	Node* spawnTiretteStateNode(std::shared_ptr<TiretteState> statePtr = nullptr);
+	Node* spawnMovetoStateNode(std::shared_ptr<MovetoState> statePtr = nullptr);
+	Node* spawnMoveThroughStateNode(std::shared_ptr<MoveThroughState> statePtr = nullptr);
+	Node* spawnChangeVacuumStateStateNode(std::shared_ptr<ChangeVacuumStateState> statePtr = nullptr);
+	Node* spawnSetStepperPosStateNode(std::shared_ptr<SetStepperPosState> statePtr = nullptr);
+	Node* spawnSetServoPosStateNode(std::shared_ptr<SetServoPosState> statePtr = nullptr);
+	Node* spawnWaitStateNode(std::shared_ptr<WaitState> statePtr = nullptr);
 
     void update(sf::RenderWindow& window);
+    
+    void loadNodes();
 };
+
+#endif //DEBUG_GUI

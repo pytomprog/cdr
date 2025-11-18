@@ -12,6 +12,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "world/World.hpp"
+
 class StrategyStateMachine;
 
 class StrategyState {
@@ -43,7 +45,10 @@ public:
 	std::shared_ptr<StrategyState> m_currentStatePtr = nullptr;
 	std::shared_ptr<StrategyState> m_nextStatePtr = nullptr;
 	
-	StrategyStateMachine() = default;
+	World& m_world;
+	
+	StrategyStateMachine() = delete;
+	StrategyStateMachine(World& world);
 	void addState(std::shared_ptr<StrategyState> newStatePtr);
 	void setNextState(std::shared_ptr<StrategyState> nextStatePtr);
 	unsigned int getStateIndexByPtrValue(std::shared_ptr<StrategyState> statePtr);

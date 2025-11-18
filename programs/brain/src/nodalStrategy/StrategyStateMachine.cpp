@@ -14,6 +14,8 @@ StrategyState::~StrategyState() {
 	//m_data = 1;
 }*/
 
+StrategyStateMachine::StrategyStateMachine(World& world): m_world(world) {}
+
 void StrategyStateMachine::addState(std::shared_ptr<StrategyState> newStatePtr) {
 	m_statePtrs.push_back(std::move(newStatePtr));
 }
@@ -75,8 +77,22 @@ void StrategyStateMachine::loadStatesFromYaml(const std::string& filename) {
 				newStatePtr = IdleState::createFromYaml(this, node);
 			} else if (type == "TestState") {
 				newStatePtr = TestState::createFromYaml(this, node);
-			} else if (type == "TestState2") {
-				newStatePtr = TestState2::createFromYaml(this, node);
+			} else if (type == "StartState") {
+				newStatePtr = StartState::createFromYaml(this, node);
+			} else if (type == "TiretteState") {
+				newStatePtr = TiretteState::createFromYaml(this, node);
+			} else if (type == "MovetoState") {
+				newStatePtr = MovetoState::createFromYaml(this, node);
+			} else if (type == "MoveThroughState") {
+				newStatePtr = MoveThroughState::createFromYaml(this, node);
+			} else if (type == "ChangeVacuumStateState") {
+				newStatePtr = ChangeVacuumStateState::createFromYaml(this, node);
+			} else if (type == "SetStepperPosState") {
+				newStatePtr = SetStepperPosState::createFromYaml(this, node);
+			} else if (type == "SetServoPosState") {
+				newStatePtr = SetServoPosState::createFromYaml(this, node);
+			} else if (type == "WaitState") {
+				newStatePtr = WaitState::createFromYaml(this, node);
 			} else {
 				std::cerr << "Unknown state type: " << type << std::endl;
 				continue;

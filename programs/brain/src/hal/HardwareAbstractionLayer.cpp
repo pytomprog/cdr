@@ -145,7 +145,7 @@ void HardwareAbstractionLayer::ownRobotRollingBaseRoutine() {
 					writingBufferStr = "D " + std::to_string((int)(m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget * cos(PI/3.f) - m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget * sin(PI/3.f))) + " " 
 					                        + std::to_string((int)(m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget * sin(PI/3.f) + m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget * cos(PI/3.f))) + " " 
 					                        + std::to_string((int)(m_world.m_ownRobot.m_dThetaTarget*1000)) + " " 
-					                        + std::to_string((int)m_world.m_ownRobot.m_maxSpeedPercentage) + "\n";
+					                        + std::to_string((int)m_world.m_ownRobot.m_gamepadMaxSpeedPercentage) + "\n";
 
 					break;
 				case POSE_CONTROL:			
@@ -178,10 +178,13 @@ void HardwareAbstractionLayer::ownRobotRollingBaseRoutine() {
 					m_world.m_ownRobot.m_commandSpeed.m_position.m_y = yCommandSpeed;
 					m_world.m_ownRobot.m_commandSpeed.m_orientation = thetaCommandSpeed;
 					
+					m_world.m_ownRobot.m_orientedCommandSpeed.m_position.m_x = xCommandSpeed * cos(-m_world.m_ownRobot.m_currentPose.m_orientation) - yCommandSpeed * sin(-m_world.m_ownRobot.m_currentPose.m_orientation);
+					m_world.m_ownRobot.m_orientedCommandSpeed.m_position.m_y = xCommandSpeed * sin(-m_world.m_ownRobot.m_currentPose.m_orientation) + yCommandSpeed * cos(-m_world.m_ownRobot.m_currentPose.m_orientation);
+					m_world.m_ownRobot.m_orientedCommandSpeed.m_orientation = thetaCommandSpeed*1000.f;
 					
-					writingBufferStr = "D " + std::to_string((int)(xCommandSpeed * cos(-m_world.m_ownRobot.m_currentPose.m_orientation) - yCommandSpeed * sin(-m_world.m_ownRobot.m_currentPose.m_orientation))) + " " 
-					                        + std::to_string((int)(xCommandSpeed * sin(-m_world.m_ownRobot.m_currentPose.m_orientation) + yCommandSpeed * cos(-m_world.m_ownRobot.m_currentPose.m_orientation))) + " " 
-					                        + std::to_string((int)(thetaCommandSpeed*1000)) + " " 
+					writingBufferStr = "D " + std::to_string((int)(m_world.m_ownRobot.m_orientedCommandSpeed.m_position.m_x)) + " " 
+					                        + std::to_string((int)(m_world.m_ownRobot.m_orientedCommandSpeed.m_position.m_y)) + " " 
+					                        + std::to_string((int)(m_world.m_ownRobot.m_orientedCommandSpeed.m_orientation)) + " " 
 					                        + std::to_string((int)m_world.m_ownRobot.m_maxSpeedPercentage) + "\n";
 					                        
 					//writingBufferStr = "D 0 500 0 20\n";
@@ -215,16 +218,6 @@ void HardwareAbstractionLayer::ownRobotArmRoutine() {
 			std::cout << "Sending to arm 1: " << std::bitset<8>(sendingByte).to_string() << std::endl;
 			returnCode = bcm2835_i2c_write(&sendingByte, 1);
 			m_world.m_ownRobot.m_arm1.m_isCommandToSend = false;			
-		}
-		if (m_world.m_ownRobot.m_arm2.m_isCommandToSend) {
-			bcm2835_i2c_setSlaveAddress(I2C_ARM_2_ADDRESS);
-			uint8_t returnCode;
-			char sendingByte = m_world.m_ownRobot.m_arm2.m_command.immediate << 7 |
-							   m_world.m_ownRobot.m_arm2.m_command.commandType << 4 |
-							   m_world.m_ownRobot.m_arm2.m_command.argument;
-			//std::cout << "Sending to arm 2: " << std::bitset<8>(sendingByte).to_string() << std::endl;
-			returnCode = bcm2835_i2c_write(&sendingByte, 1);
-			m_world.m_ownRobot.m_arm2.m_isCommandToSend = false;
 		}
 	}
 }

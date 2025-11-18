@@ -42,6 +42,13 @@ void halLoop(HardwareAbstractionLayer& hal) {
         hal.m_deltaTime = timeDifference.count();
         //std::cout << "hal deltaTime: " << hal.m_deltaTime << std::endl;
         
+        //std::cout << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - hal.m_world.startTime).count() << std::endl;
+        if(hal.m_world.started && std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - hal.m_world.startTime).count() > 90.f) {
+            hal.m_world.m_ownRobot.m_motorsEnabled = false;
+            std::cout << "End of the match for the robot" << std::endl;
+            break;
+        }
+        
         //halMutex.lock();
         hal.ownRobotCameraRoutine();
         hal.ownRobotRollingBaseRoutine();
@@ -63,9 +70,9 @@ int main() {
 
     sf::Clock deltaClock;
 
-    OwnRobot ownRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Green), 0.f), 200.f, false); // TODO: Put it back to true, this is for test purpose only
+    OwnRobot ownRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Green), 0.f), 200.f, true); // TODO: Put it back to true, this is for test purpose only
     Obstacle advRobot(Pose2f(Vec2f(0.f, 0.f, sf::Color::Yellow), 0.f), 500.f);
-    World world(STRATEGY_MODE, "Demo", ownRobot, advRobot);
+    World world(STRATEGY_MODE, "Nodal strategy", ownRobot, advRobot);
 
     std::map<std::string, Strategy*> strategies;
     std::vector<std::string> strategiesNames;
@@ -76,7 +83,7 @@ int main() {
 
     std::thread halThread(halLoop, std::ref(hal));
 
-    while (window.isOpen()) {
+    while (window.isOpen()) {        
         sf::Event event;
         while (window.pollEvent(event)) {
             ImGui::SFML::ProcessEvent(window, event);
@@ -97,6 +104,7 @@ int main() {
 
         //halMutex.lock();
         gui.update();
+        strategies[world.m_strategyName]->guiRoutine(window);
         //halMutex.unlock();
 
         ImGui::SFML::Render(window);
