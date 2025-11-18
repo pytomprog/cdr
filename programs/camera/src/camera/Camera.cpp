@@ -325,7 +325,7 @@ void Camera::close() {
 		//controls.set(libcamera::controls::AeLocked, true);
 		//controls.set(libcamera::controls::AeExposureMode, libcamera::controls::AeExposureModeEnum::ExposureCustom); //I think it's not programmed, so we can't use it
 		
-		controls.set(libcamera::controls::ExposureTime, 5000); //20000ms => 50Hz max, TODO: test to see the best value
+		controls.set(libcamera::controls::ExposureTime, 5000); //Best: 5000, is at 1000 for outdoor test //20000ms => 50Hz max, TODO: test to see the best value
 		//controls.set(libcamera::controls::AfMode, libcamera::controls::AfModeEnum::AfModeAuto);
 		controls.set(libcamera::controls::LensPosition, 0);
 		//TODO: Handle focus and luminosity correctly

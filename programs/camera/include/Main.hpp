@@ -16,7 +16,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h> 
-#include <unistd.h> 
+#include <unistd.h>
+#include <iomanip>
+#include <sstream>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -26,6 +28,7 @@
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include "config.hpp"
 #include "aruco/ArucoDetector.hpp"
@@ -38,6 +41,10 @@
 #include "filtering/NumericalFilter.hpp"
 #include "SpdlogUtils.hpp"
 
+#include "bcm2835.h"
+
+
+std::string getTimestampedFilename();
 
 std::function<int(cv::Mat*)> processFrameFunction;
 class Main {
@@ -47,14 +54,20 @@ public:
 		DataPlotter m_dataPlotter;
 	#endif // PLOT_ENABLED
 	Camera m_camera = Camera(2304, 1296);
-	ArucoDetector m_arucoDetector = ArucoDetector(m_camera, m_profiler, BLUE_TEAM, 3);
+	ArucoDetector m_arucoDetector;
 	
 	int stopCode = 0;
 	
-	NumericalFilter m_robotTxFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
-	NumericalFilter m_robotTyFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
-	NumericalFilter m_robotRxCosFilter = NumericalFilter(filterACoefficients, filterBCoefficients, cos(0.f));
-	NumericalFilter m_robotRxSinFilter = NumericalFilter(filterACoefficients, filterBCoefficients, sin(0.f));
+	NumericalFilter m_ownRobotTxFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
+	NumericalFilter m_ownRobotTyFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
+	NumericalFilter m_ownRobotRxCosFilter = NumericalFilter(filterACoefficients, filterBCoefficients, cos(0.f));
+	NumericalFilter m_ownRobotRxSinFilter = NumericalFilter(filterACoefficients, filterBCoefficients, sin(0.f));
+	//NumericalFilter m_robotRzFilter(filterACoefficients, filterBCoefficients, 0.f);
+	
+	NumericalFilter m_advRobotTxFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
+	NumericalFilter m_advRobotTyFilter = NumericalFilter(filterACoefficients, filterBCoefficients, 0.f);
+	NumericalFilter m_advRobotRxCosFilter = NumericalFilter(filterACoefficients, filterBCoefficients, cos(0.f));
+	NumericalFilter m_advRobotRxSinFilter = NumericalFilter(filterACoefficients, filterBCoefficients, sin(0.f));
 	//NumericalFilter m_robotRzFilter(filterACoefficients, filterBCoefficients, 0.f);
 	
 	int m_iteration = 0;
@@ -68,12 +81,12 @@ public:
 	#endif // COMMUNICATION_ENABLED
 	
 	
-	Main();
+	Main(bool isYellow);
 
 	int run();
 	int step(cv::Mat* inputFramePtr);
 };
 
-int main();
+int main(int argc, char* argv[]);
 
 #endif // CDR_MAIN_HPP

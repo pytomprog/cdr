@@ -7,19 +7,19 @@
 #include <spdlog/spdlog.h>
 
 // ------------------- Features -------------------
-#ifndef NDEBUG
+#ifndef NDEBUG // Debug mode
 	#define PLOT_ENABLED
 	#define CVWINDOW_ENABLED
 	//#define COMMUNICATION_ENABLED
-	spdlog::level::level_enum logLevel = spdlog::level::debug;
-#else
-	#define PLOT_ENABLED
+	spdlog::level::level_enum consoleLogLevel = spdlog::level::debug;
+#else // Release mode
+	//#define PLOT_ENABLED
 	//#define CVWINDOW_ENABLED
 	#define COMMUNICATION_ENABLED 
-	spdlog::level::level_enum logLevel = spdlog::level::info;
+	spdlog::level::level_enum consoleLogLevel = spdlog::level::info;
 #endif // NDEBUG
 
-std::string serverAddress = "192.168.130.134";
+std::string serverAddress = "192.168.242.134";
 int serverPort =  8910;
 std::string cameraSource = "assets/testRessources/Image0001.png"; //"1";
 int timeout = 100000;

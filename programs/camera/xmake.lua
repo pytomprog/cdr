@@ -22,7 +22,7 @@ target("camera")
     set_kind("binary")
     set_languages("cxx20")
 
-    add_files("src/**.cpp")
+    add_files("src/**.cpp", "src/**.c")
     add_headerfiles("src/**.hpp", "src/**.h")
     add_headerfiles("include/**.hpp", "include/**.h")
 

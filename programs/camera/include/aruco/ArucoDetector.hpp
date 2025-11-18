@@ -5,6 +5,7 @@
 
 #include <map>
 #include <vector>
+#include <chrono>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -20,6 +21,8 @@
 #include "Profiler.hpp"
 #include "aruco/ArucoUtils.hpp"
 
+using namespace std::chrono;
+
 enum Team {
 	BLUE_TEAM, // Aruco tags 1 to 5
 	YELLOW_TEAM // Aruco tags 6 to 10
@@ -29,7 +32,8 @@ enum State {
 	WAITING,
 	DETECTING_EVERYTHING,
 	DETECTING_TABLE,
-	DETECTING_OWN_ROBOT
+	DETECTING_OWN_ROBOT,
+	DETECTING_BOTH_ROBOTS
 };
 
 class ArucoDetector {
@@ -51,19 +55,25 @@ public:
 	cv::Vec3f m_tableRvec, m_tableTvec;
 	cv::Vec3f m_tableInvRvec, m_tableInvTvec;
 	bool m_tableAlreadyDetected;
+	
 	cv::Vec3f m_ownRobotRvecCameraFrame, m_ownRobotTvecCameraFrame;
 	cv::Vec3f m_ownRobotRvecTableFrame, m_ownRobotTvecTableFrame;
 	bool m_ownRobotDetected;
 	bool m_ownRobotAlreadyDetected;
+	
+	cv::Vec3f m_advRobotRvecCameraFrame, m_advRobotTvecCameraFrame;
+	cv::Vec3f m_advRobotRvecTableFrame, m_advRobotTvecTableFrame;
+	bool m_advRobotDetected;
+	time_point<high_resolution_clock> m_advRobotLastDetectionTimepoint;
+	bool m_advRobotAlreadyDetected;
 
 	cv::Mat m_croppedFrame;
 	cv::Rect m_cropRectangle;
 	cv::Rect m_futureCropRectangle;
 
 	Team m_ownTeam;
-	int m_focusMarkerId;
 	
-	ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam, int focusMarkerId);
+	ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam);
 	void getMarkers3dPosition(cv::Mat& inputFrame);
 	void drawResults(cv::Mat& inputFrame);
 };

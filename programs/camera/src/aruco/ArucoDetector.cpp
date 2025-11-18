@@ -1,6 +1,6 @@
 #include "aruco/ArucoDetector.hpp"
 
-ArucoDetector::ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam, int focusMarkerId) : m_camera(camera), m_profiler(profiler) {
+ArucoDetector::ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam) : m_camera(camera), m_profiler(profiler) {
 	m_nextState = DETECTING_TABLE;
 	
 	m_dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
@@ -12,11 +12,13 @@ ArucoDetector::ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam, i
 	
 	m_tableAlreadyDetected = false;
 	m_ownRobotAlreadyDetected = false;
+	m_advRobotAlreadyDetected = false;
+	
+	//TODO: Complete it: m_advRobotLastDetectionTimepoint = ;
 
 	m_futureCropRectangle = cv::Rect(0, 0, camera.m_width, camera.m_height);
 
 	m_ownTeam = ownTeam;
-	m_focusMarkerId = focusMarkerId;
 }
 
 void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
@@ -31,6 +33,7 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 	m_markersId.clear(); // Already done in m_cvDetector.detectMarkers()
 	m_tableMarkersId.clear(); // But this line is necessary
 	m_ownRobotDetected = false;
+	m_advRobotDetected = false;
 
 	m_cropRectangle = m_futureCropRectangle;
 	m_croppedFrame = inputFrame(m_cropRectangle);
@@ -38,6 +41,7 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 
 	std::vector<cv::Point2f> tableMarkersCorners;
 	std::vector<cv::Point2f> ownRobotMarkerCorners;
+	std::vector<cv::Point2f> advRobotMarkerCorners;
 	m_cvDetector.detectMarkers(m_croppedFrame, m_markersCorners, m_markersId, m_rejectedCandidates);
 	for (size_t i = 0; i < m_markersId.size(); i++) {
 		int markerId = m_markersId[i];
@@ -49,7 +53,8 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 			ownRobotMarkerCorners = markerCorners;
 			m_ownRobotDetected = true;
 		} else if ((markerId >= 1 && markerId <= 5 && m_ownTeam != BLUE_TEAM) || (markerId >= 6 && markerId <= 10 && m_ownTeam != YELLOW_TEAM)) {
-			//TODO: Adverse robot detection code
+			advRobotMarkerCorners = markerCorners;
+			m_advRobotDetected = true;
 		} else if (markerId >= 20 && markerId <= 23) {
 			m_tableMarkersId.push_back(markerId);
 			tableMarkersCorners.insert(tableMarkersCorners.end(), markerCorners.begin(), markerCorners.end());
@@ -57,13 +62,16 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 	}
 
 	m_profiler.updateTimepoint(2);
-
-	if (m_currentState == DETECTING_OWN_ROBOT && m_ownRobotDetected) {
+	
+	float advRobotLastDetectionDeltaTime = duration_cast<milliseconds>(high_resolution_clock::now() - m_advRobotLastDetectionTimepoint).count();
+	//spdlog::debug("Delta time: {}sec\n", advRobotLastDetectionDeltaTime/1000.f);
+	if (m_ownRobotDetected && (m_currentState == DETECTING_OWN_ROBOT || (m_currentState == DETECTING_BOTH_ROBOTS && advRobotLastDetectionDeltaTime < 1000.f))) {
 		// Improve future crop rectangle
 		improveFutureCropRectangle(inputFrame, ownRobotMarkerCorners, m_futureCropRectangle);
 	} else {
 		// Reset future crop rectangle
 		m_futureCropRectangle = { 0, 0, inputFrame.cols, inputFrame.rows };
+		m_advRobotLastDetectionTimepoint = high_resolution_clock::now();
 	}
 	m_profiler.updateTimepoint(3);
 	
@@ -85,16 +93,25 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 
 		m_tableAlreadyDetected = true;
 		if (m_currentState == DETECTING_TABLE)
-			m_nextState = DETECTING_OWN_ROBOT; //TODO: Detect table pose multiple times and compute the mean to be more robust, and then detect the robot 
+			m_nextState = DETECTING_BOTH_ROBOTS; //DETECTING_OWN_ROBOT; //TODO: Detect table pose multiple times and compute the mean to be more robust, and then detect the robot 
 	}
 	
-	if ((m_currentState == DETECTING_EVERYTHING || m_currentState == DETECTING_OWN_ROBOT) && m_ownRobotDetected) {
+	if ((m_currentState == DETECTING_EVERYTHING || m_currentState == DETECTING_BOTH_ROBOTS || m_currentState == DETECTING_OWN_ROBOT) && m_ownRobotDetected) {
 		bool useExtrinsicGuess = m_ownRobotAlreadyDetected;
 		cv::solvePnP(marker3dPoints(1), ownRobotMarkerCorners, m_camera.m_intrinsicMatrix, m_camera.m_distortionCoefficients, m_ownRobotRvecCameraFrame, m_ownRobotTvecCameraFrame, useExtrinsicGuess, cv::SOLVEPNP_ITERATIVE); //cv::SOLVEPNP_IPPE_SQUARE);
 		cv::composeRT(m_ownRobotRvecCameraFrame, m_ownRobotTvecCameraFrame, m_tableInvRvec, m_tableInvTvec, m_ownRobotRvecTableFrame, m_ownRobotTvecTableFrame);
-		spdlog::debug("Robot position: {}, rotation: {} (in table frame)", m_ownRobotTvecTableFrame, m_ownRobotRvecTableFrame);
+		spdlog::debug("Own robot position: {}, rotation: {} (in table frame)", m_ownRobotTvecTableFrame, m_ownRobotRvecTableFrame);
 
 		m_ownRobotAlreadyDetected = true;
+	}
+	
+	if ((m_currentState == DETECTING_EVERYTHING || m_currentState == DETECTING_BOTH_ROBOTS) && m_advRobotDetected) {
+		bool useExtrinsicGuess = m_advRobotDetected;
+		cv::solvePnP(marker3dPoints(1), advRobotMarkerCorners, m_camera.m_intrinsicMatrix, m_camera.m_distortionCoefficients, m_advRobotRvecCameraFrame, m_advRobotTvecCameraFrame, useExtrinsicGuess, cv::SOLVEPNP_ITERATIVE); //cv::SOLVEPNP_IPPE_SQUARE);
+		cv::composeRT(m_advRobotRvecCameraFrame, m_advRobotTvecCameraFrame, m_tableInvRvec, m_tableInvTvec, m_advRobotRvecTableFrame, m_advRobotTvecTableFrame);
+		spdlog::debug("Adv robot position: {}, rotation: {} (in table frame)", m_advRobotTvecTableFrame, m_advRobotRvecTableFrame);
+
+		m_advRobotAlreadyDetected = true;
 	}
 
 	iteration++;
@@ -102,7 +119,7 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 
 void ArucoDetector::drawResults(cv::Mat& inputFrame) {
 	cv::rectangle(inputFrame, m_cropRectangle, cv::Scalar(255, 0, 0));
-	cv::aruco::drawDetectedMarkers(inputFrame, m_markersCorners, m_markersId);
+	//cv::aruco::drawDetectedMarkers(inputFrame, m_markersCorners, m_markersId);
 	/*for (size_t i = 0; i < m_markersId.size(); i++) {
 		int markerId = m_markersId[i];
 		cv::drawFrameAxes(inputFrame, m_camera.m_intrinsicMatrix, m_camera.m_distortionCoefficients, m_rvecs[markerId], m_tvecs[markerId], markerLength(markerId) * 1.5f, 2);
