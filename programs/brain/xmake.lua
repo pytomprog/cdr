@@ -3,7 +3,10 @@ add_rules("mode.debug", "mode.release")
 
 add_includedirs("include", "src")
 
-add_requires("sfml", "imgui-sfml 2.5")
+add_requires("sfml 2.6")
+add_requires("imgui-sfml 2.6")
+add_requires("vcpkg::imgui-node-editor 0.9.3", {alias = "imgui-node-editor"})
+add_requires("yaml-cpp")
 
 --set_symbols("debug")
 
@@ -44,6 +47,17 @@ target("hal")
 
     add_packages("sfml", "imgui-sfml")
 
+target("nodalStrategy")
+    set_kind("binary")
+
+    add_files("src/nodalStrategy/**.cpp")
+    add_headerfiles("include/nodalStrategy/**.hpp")
+    add_headerfiles("src/nodalStrategy/**.hpp")
+
+    add_headerfiles("src/parameters.hpp")
+
+    add_packages("sfml", "imgui-sfml", "imgui-node-editor", "yaml-cpp")
+
 target("core")
     set_kind("binary")
 
@@ -77,7 +91,12 @@ target("core")
     add_headerfiles("include/strategy/**.hpp")
     add_headerfiles("src/strategy/**.hpp")
 
-    add_packages("sfml", "imgui-sfml")
+    add_files("src/nodalStrategy/**.cpp")
+    add_headerfiles("include/nodalStrategy/**.hpp")
+    add_headerfiles("src/nodalStrategy/**.hpp")
+    remove_files("src/nodalStrategy/main.cpp")
+
+    add_packages("sfml", "imgui-sfml", "imgui-node-editor", "yaml-cpp")
 
     --set_policy("build.sanitizer.thread", true) -- Enable thread sanitizer to detect data races
     --add_cxflags("-fsanitize=thread", "-ftrapv")

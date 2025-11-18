@@ -8,6 +8,7 @@
 #define VERBOSE
 
 constexpr float PI = 3.14159265358979;
+constexpr float TWO_PI = 6.28318530717958;
 
 constexpr unsigned int WINDOW_WIDTH = 1900, WINDOW_HEIGHT = 1000u;
 

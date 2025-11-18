@@ -145,9 +145,9 @@ void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
 				break;
 			case GAMEPAD_CONTROL:
 				if (m_gamepadEnabled){
-					m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget = (sf::Joystick::getAxisPosition(0, sf::Joystick::R) - sf::Joystick::getAxisPosition(0, sf::Joystick::Z))/2.f*10.f;
-					m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::X)*10.f;
-					m_world.m_ownRobot.m_dThetaTarget = -sf::Joystick::getAxisPosition(0, sf::Joystick::U)/50.f;
+					m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget = powf((sf::Joystick::getAxisPosition(0, sf::Joystick::R) - sf::Joystick::getAxisPosition(0, sf::Joystick::Z))/200.f, 3)*1000.f;
+					m_world.m_ownRobot.m_gamepadSecondaryAxisSpeedTarget = -powf(sf::Joystick::getAxisPosition(0, sf::Joystick::X)/100.f, 3)*1000.f;
+					m_world.m_ownRobot.m_dThetaTarget = -powf(sf::Joystick::getAxisPosition(0, sf::Joystick::U)/100.f, 3)*2.f;
 				}
 				ImGui::SliderInt("Gamepad max speed percentage", &m_world.m_ownRobot.m_gamepadMaxSpeedPercentage, 0, 100);
 				ImGui::SliderInt("Primary axis speed", &m_world.m_ownRobot.m_gamepadPrimaryAxisSpeedTarget, -1000, 1000);
@@ -176,9 +176,18 @@ void GraphicalUserInterface::ownRobotRollingBaseRoutine() {
 				ImGui::InputFloat("thetaI", &m_world.m_ownRobot.m_thetaICoefficient, -1000.f, 1000.f, "%.6f");
 				ImGui::InputFloat("thetaD", &m_world.m_ownRobot.m_thetaDCoefficient, -1000.f, 1000.f, "%.6f");
 				
+				ImGui::SliderFloat("Command dx", &m_world.m_ownRobot.m_commandSpeed.m_position.m_x, -1000.f, 1000.f);
+				ImGui::SliderFloat("Command dy", &m_world.m_ownRobot.m_commandSpeed.m_position.m_y, -1000.f, 1000.f);
+				ImGui::SliderFloat("Command dTheta", &m_world.m_ownRobot.m_commandSpeed.m_orientation, -2000.f, 2000.f);
+				ImGui::SliderFloat("Oriented Command dx", &m_world.m_ownRobot.m_orientedCommandSpeed.m_position.m_x, -1000.f, 1000.f);
+				ImGui::SliderFloat("Oriented Command dy", &m_world.m_ownRobot.m_orientedCommandSpeed.m_position.m_y, -1000.f, 1000.f);
+				ImGui::SliderFloat("Oriented Command dTheta", &m_world.m_ownRobot.m_orientedCommandSpeed.m_orientation, -2000.f, 2000.f);
+				
 				if (ImGui::Button("Reset error integration")) {
 					m_world.m_ownRobot.m_errorPoseIntegrated = Pose2f(Vec2f(0.f, 0.f), 0.f);
 				}
+				
+				
 
 				break;
 		}
@@ -192,15 +201,15 @@ void GraphicalUserInterface::ownRobotArmRoutine() {
 	const char* commandsList[] =
 	{
 		"Stop / Wait",
-		"Goto pos mot 1",
-		"Goto pos mot 2",
-		"Goto pos mot 3",
+		"Set plank servo pos",
+		"Set vacuum state",
+		"Set stepper pos",
 		"Goto memorized position",
 		"Run memorized sequence",
 	};
 
-	static bool button0Pressed = 0, button1Pressed = 0, button2Pressed = 0, button3Pressed = 0;
-	static bool button0PreviouslyPressed = 0, button1PreviouslyPressed = 0, button2PreviouslyPressed = 0, button3PreviouslyPressed = 0;
+	static bool button0Pressed = 0, button1Pressed = 0, button2Pressed = 0, button3Pressed = 0, button4Pressed = 0, button5Pressed = 0, button12Pressed = 0, button13Pressed = 0, button14Pressed = 0, button15Pressed = 0;
+	static bool button0PreviouslyPressed = 0, button1PreviouslyPressed = 0, button2PreviouslyPressed = 0, button3PreviouslyPressed = 0, button4PreviouslyPressed = 0, button5PreviouslyPressed = 0, button12PreviouslyPressed = 0, button13PreviouslyPressed = 0, button14PreviouslyPressed = 0, button15PreviouslyPressed = 0;
 
 	ImGui::SetNextWindowSizeConstraints(ImVec2(200, -1), ImVec2(2000, -1));
 	ImGui::Begin("Arm", 0, ImGuiWindowFlags_AlwaysAutoResize);
@@ -212,39 +221,82 @@ void GraphicalUserInterface::ownRobotArmRoutine() {
 		if (ImGui::Button("Send command arm 1")) {
 			m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
 		}
-		ImGui::Checkbox("Immediate command 2", &m_world.m_ownRobot.m_arm2.m_command.immediate);
-		ImGui::Combo("Command 2", &m_world.m_ownRobot.m_arm2.m_command.commandType, commandsList, IM_ARRAYSIZE(commandsList));
-		ImGui::SliderInt("Argument 2", &m_world.m_ownRobot.m_arm2.m_command.argument, 0, 15);
-		if (ImGui::Button("Send command arm 2")) {
-			m_world.m_ownRobot.m_arm2.m_isCommandToSend = true;
-		}
 		if (m_gamepadEnabled) {
+			/*std::cout << "Buttons pressed: " << std::endl;
+			for (int buttonIndex = 0; buttonIndex < sf::Joystick::getButtonCount(0); buttonIndex++) {
+				std::cout << buttonIndex << ": " << sf::Joystick::isButtonPressed(0, buttonIndex) << ", ";
+			}
+			std::cout << std::endl;*/
+			
 			button0Pressed = sf::Joystick::isButtonPressed(0, 0);
 			button1Pressed = sf::Joystick::isButtonPressed(0, 1);
 			button2Pressed = sf::Joystick::isButtonPressed(0, 2);
 			button3Pressed = sf::Joystick::isButtonPressed(0, 3);
-
+			button4Pressed = sf::Joystick::isButtonPressed(0, 4);
+			button5Pressed = sf::Joystick::isButtonPressed(0, 5);
+			button12Pressed = sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) == 100;
+			button13Pressed = sf::Joystick::getAxisPosition(0, sf::Joystick::PovY) == -100;
+			button14Pressed = sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) == -100;
+			button15Pressed = sf::Joystick::getAxisPosition(0, sf::Joystick::PovX) == 100;
+			
+			// TODO: Allow multiple buttons pressed at the same time
+			// Outer vacuum
 			if (button1Pressed && !button1PreviouslyPressed) {
 				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
                 m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
-                m_world.m_ownRobot.m_arm1.m_command.argument = 6;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 9;
                 m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
 			} else if (button2Pressed && !button2PreviouslyPressed) {
 				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
                 m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
-                m_world.m_ownRobot.m_arm1.m_command.argument = 12;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 8;
                 m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
 			}
-
-			if (button3Pressed && !button3PreviouslyPressed) {
+			// Inner vacuum 
+			else if (button3Pressed && !button3PreviouslyPressed) {
                 m_world.m_ownRobot.m_arm1.m_command.immediate = true;
-                m_world.m_ownRobot.m_arm1.m_command.commandType = 1;
-                m_world.m_ownRobot.m_arm1.m_command.argument = 13;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 5;
                 m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
 			} else if (button0Pressed && !button0PreviouslyPressed) {
 				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 4;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			// Plank vacuum
+			} else if (button5Pressed && !button5PreviouslyPressed) {
+                m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 3;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			} else if (button4Pressed && !button4PreviouslyPressed) {
+				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 2;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 2;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			}
+			// Servo
+			else if (button15Pressed && !button15PreviouslyPressed) {
+                m_world.m_ownRobot.m_arm1.m_command.immediate = true;
                 m_world.m_ownRobot.m_arm1.m_command.commandType = 1;
-                m_world.m_ownRobot.m_arm1.m_command.argument = 7;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 0;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			} else if (button14Pressed && !button14PreviouslyPressed) {
+				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 1;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 15;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			}
+			// Stepper
+			else if (button13Pressed && !button13PreviouslyPressed) {
+                m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 3;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 9;
+                m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
+			} else if (button12Pressed && !button12PreviouslyPressed) {
+				m_world.m_ownRobot.m_arm1.m_command.immediate = true;
+                m_world.m_ownRobot.m_arm1.m_command.commandType = 3;
+                m_world.m_ownRobot.m_arm1.m_command.argument = 0;
                 m_world.m_ownRobot.m_arm1.m_isCommandToSend = true;
 			}
 
@@ -252,6 +304,12 @@ void GraphicalUserInterface::ownRobotArmRoutine() {
 			button1PreviouslyPressed = button1Pressed;
 			button2PreviouslyPressed = button2Pressed;
 			button3PreviouslyPressed = button3Pressed;
+			button4PreviouslyPressed = button4Pressed;
+			button5PreviouslyPressed = button5Pressed;
+			button12PreviouslyPressed = button12Pressed;
+			button13PreviouslyPressed = button13Pressed;
+			button14PreviouslyPressed = button14Pressed;
+			button15PreviouslyPressed = button15Pressed;
 		}
 	}
 	ImGui::End();
