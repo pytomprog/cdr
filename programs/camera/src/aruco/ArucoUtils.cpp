@@ -47,16 +47,16 @@ cv::Mat tableMarkers3dPoints(std::vector<int> markersId) {
 		cv::Vec3f basePosition;
 		switch (markersId[i]) {
 		case 20:
-			basePosition = cv::Vec3f(750.f, 1500.f, 0.f);
+			basePosition = cv::Vec3f(600.f, 1400.f, 0.f);
 			break;
 		case 21:
-			basePosition = cv::Vec3f(2250.f, 1500.f, 0.f);
+			basePosition = cv::Vec3f(2400.f, 1400.f, 0.f);
 			break;
 		case 22:
-			basePosition = cv::Vec3f(750.f, 500.f, 0.f);
+			basePosition = cv::Vec3f(600.f, 600.f, 0.f);
 			break;
 		case 23:
-			basePosition = cv::Vec3f(2250.f, 500.f, 0.f);
+			basePosition = cv::Vec3f(2400.f, 600.f, 0.f);
 			break;
 			
 		// WARNING: THIS IS ONLY FOR VILLAGE DES SCIENCES

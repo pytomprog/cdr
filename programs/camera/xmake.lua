@@ -2,9 +2,11 @@ add_rules("plugin.vsxmake.autoupdate")
 add_rules("mode.debug", "mode.release")
 
 add_includedirs("include", "src")
+add_includedirs("../protobuf")
+--add_includedirs("$(builddir)/proto/__/protobuf/")
 
 if is_plat("windows") then
-	--set_runtimes(is_mode("debug") and "MDd" or "MD")
+	set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
 
 if is_arch("arm.*") then
@@ -12,28 +14,50 @@ if is_arch("arm.*") then
     add_requires("libcamera", "libevent_pthreads")
     add_requires("opencv >=4.10.0", {configs = {gtk = true}})--is_mode("debug")}})
 else
-    add_requires("opencv >=4.10.0")--is_mode("debug")}})    
+    add_requires("opencv =4.11.0")--is_mode("debug")}})    
 end
 
-add_requires("matplotplusplus", "spdlog")
+add_requires("matplotplusplus", "spdlog", "pahomqttcpp")
+--add_requires("protobuf-cpp", {configs = {shared = true}})
 --add_requires("implot")
+
+-- New target for protobuf code generation
+--target("robot_proto")
+--     set_kind("static")
+--     set_languages("cxx20")
+--     add_rules("protobuf.cpp")
+--     add_files("../protobuf/RobotPosition.proto", {proto_autogendir = "$(builddir)/proto", proto_public = true})
+--     add_packages("protobuf-cpp", {public = true, shared = false})
 
 target("camera")
     set_kind("binary")
     set_languages("cxx20")
+    
+    -- Add dependency on our generated protobuf library
+    --add_deps("robot_proto")
 
     add_files("src/**.cpp", "src/**.c")
     add_headerfiles("src/**.hpp", "src/**.h")
     add_headerfiles("include/**.hpp", "include/**.h")
 
+    add_headerfiles("../protobuf/**.h")
+    add_files("../protobuf/**.c")
+    --add_headerfiles("$(builddir)/proto/__/protobuf/**.h")
+
     if not is_arch("arm.*") then
-        remove_files("src/camera/event_loop.cpp", "src/camera/mapped_framebuffer.cpp")
-        remove_headerfiles("include/camera/event_loop.hpp", "include/camera/mapped_framebuffer.hpp")
+        remove_files("src/camera/event_loop.cpp", "src/camera/mapped_framebuffer.cpp", "src/bcm2835.c")
+        remove_headerfiles("include/camera/event_loop.hpp", "include/camera/mapped_framebuffer.hpp", "include/bcm2835.h")
     end
 
+    add_packages("nasm")
     add_packages("opencv")
     add_packages("matplotplusplus", "spdlog") --, "implot")
 
+    add_packages("pahomqttcpp")
+    -- The main target still needs to link to the protobuf runtime
+    --add_rules("protobuf.cpp")
+    --add_files("../protobuf/RobotPosition.proto")
+    
     if is_arch("arm.*") then
         add_packages("libcamera", "libevent_pthreads")
     end

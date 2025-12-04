@@ -10,23 +10,29 @@ std::string getTimestampedFilename() {
     return oss.str();
 }
 
-uint8_t COLOR_CHOICE_PIN = 16;
+#ifdef ARM
+	uint8_t COLOR_CHOICE_PIN = 16;
+#endif // ARM
 int main(int argc, char* argv[]) {
-	/*if (argc != 2) {
-		std::cerr << "Please provide 1 argument for the team: y or b" << std::endl;
+#ifdef ARM
+	if (!bcm2835_init()) {
+		std::cerr << "BCM2835 initialization failed !" << std::endl;
 		return 1;
 	}
-	Main m(argv[1][0] == 'y');*/
-	
-	if (!bcm2835_init())
-		return 1;
-	
+
 	// Set RPI pin P1-15 to be an input
 	bcm2835_gpio_fsel(COLOR_CHOICE_PIN, BCM2835_GPIO_FSEL_INPT);
 	// with a pullup
-	bcm2835_gpio_set_pud(COLOR_CHOICE_PIN, BCM2835_GPIO_PUD_UP); 
+	bcm2835_gpio_set_pud(COLOR_CHOICE_PIN, BCM2835_GPIO_PUD_UP);
 	// Now get the value
 	bool isYellow = bcm2835_gpio_lev(COLOR_CHOICE_PIN);
+#else
+	if (argc != 2) {
+		std::cerr << "Please provide 1 argument for the team: y or b" << std::endl;
+		return 1;
+	}
+	bool isYellow = argv[1][0] == 'y';
+#endif // ARM
 	
 	Main m(isYellow);
 	
@@ -70,44 +76,27 @@ int Main::run() {
 		//m_dataPlotter.addFigure("Own robot rotation histogram", { "robotRxHist", "robotRyHist", "robotRzHist" }, HIST);
 	#endif // PLOT_ENABLED
 	
-	#ifdef COMMUNICATION_ENABLED
-		m_serverAddress.sin_family = AF_INET;
-		m_serverAddress.sin_port = htons(serverPort);
-		m_serverAddress.sin_addr.s_addr = inet_addr(serverAddress.c_str());
-	#endif // COMMUNICATION_ENABLED
-	
 	processFrameFunction = [this](cv::Mat* inputFramePtr) {return this->step(inputFramePtr);};
 	m_startingTick = cv::getTickCount();
 	
 	m_camera.open(cameraSource);
 	spdlog::info("Camera opened !");
+	m_arucoDetector.m_futureCropRectangle = cv::Rect(0, 0, m_camera.m_width, m_camera.m_height);
 		
 	do {
 		#ifdef COMMUNICATION_ENABLED
-			m_clientSocket = socket(AF_INET, SOCK_STREAM, 0);
-			m_failedMessagesCount = 0;
-			int connectionReturnCode;
-			bool connected = false;
-			while (!connected) {
-				spdlog::error("Trying to connect to the server, on {}:{} ...", serverAddress, serverPort);
-				connectionReturnCode = connect(m_clientSocket, (struct sockaddr*)&m_serverAddress, sizeof(m_serverAddress));
-				spdlog::info("Return code: {}", connectionReturnCode);
-				if (connectionReturnCode >= 0) {
-					connected = true;
-				} else {
-					spdlog::error("Failed to connect to the server, on {}:{}, errno: {}, Retrying ...", serverAddress, serverPort, errno);
-					std::this_thread::sleep_for(500ms);
-				}
+			m_mqttClientManager.connectToBroker();
+			while (!m_mqttClientManager.isConnected()) {
+				std::this_thread::sleep_for(1s);
+				m_mqttClientManager.connectToBroker();
 			}
-			fcntl(m_clientSocket, F_SETFL, O_NONBLOCK);
-			spdlog::info("Connected to the server, on {}:{}", serverAddress, serverPort);
 		#endif // COMMUNICATION_ENABLED
 		
 		spdlog::info("Starting computing robots position...");	
 		m_camera.run();
 		
 		#ifdef COMMUNICATION_ENABLED
-			spdlog::info("Closing code: {}", close(m_clientSocket));
+			m_mqttClientManager.disconnectFromBroker();
 		#endif // COMMUNICATION_ENABLED
 	} while (stopCode != 2);
 	
@@ -155,14 +144,14 @@ int Main::step(cv::Mat* inputFramePtr) {
 		spdlog::debug("\t\tPosition: {}", m_arucoDetector.m_tvecs[markerId]);
 		spdlog::debug("\t\tRotation: {}", m_arucoDetector.m_rvecs[markerId]);
 		#ifdef PLOT_ENABLED
-			if (markerId == m_arucoDetector.m_focusMarkerId) {
-				//m_dataPlotter.m_figures["Corners x position"].addData({ m_arucoDetector.m_markersCorners[i][0].x, m_arucoDetector.m_markersCorners[i][1].x, m_arucoDetector.m_markersCorners[i][2].x, m_arucoDetector.m_markersCorners[i][3].x });
-				//m_dataPlotter.m_figures["Corners y position"].addData({ m_arucoDetector.m_markersCorners[i][0].y, m_arucoDetector.m_markersCorners[i][1].y, m_arucoDetector.m_markersCorners[i][2].y, m_arucoDetector.m_markersCorners[i][3].y });
-				//m_dataPlotter.m_figures["Marker position"].addData({ m_arucoDetector.m_tvecs[markerId][0], m_arucoDetector.m_tvecs[markerId][1], m_arucoDetector.m_tvecs[markerId][2] });
-				//m_dataPlotter.m_figures["Marker position histogram"].addData({ m_arucoDetector.m_tvecs[markerId][0], m_arucoDetector.m_tvecs[markerId][1], m_arucoDetector.m_tvecs[markerId][2] });
-				//m_dataPlotter.m_figures["Marker rotation"].addData({ m_arucoDetector.m_rvecs[markerId][0], m_arucoDetector.m_rvecs[markerId][1], m_arucoDetector.m_rvecs[markerId][2] });
-				//m_dataPlotter.m_figures["Marker rotation histogram"].addData({ m_arucoDetector.m_rvecs[markerId][0], m_arucoDetector.m_rvecs[markerId][1], m_arucoDetector.m_rvecs[markerId][2] });
-			}
+			/*if (markerId == m_arucoDetector.m_focusMarkerId) {
+				m_dataPlotter.m_figures["Corners x position"].addData({ m_arucoDetector.m_markersCorners[i][0].x, m_arucoDetector.m_markersCorners[i][1].x, m_arucoDetector.m_markersCorners[i][2].x, m_arucoDetector.m_markersCorners[i][3].x });
+				m_dataPlotter.m_figures["Corners y position"].addData({ m_arucoDetector.m_markersCorners[i][0].y, m_arucoDetector.m_markersCorners[i][1].y, m_arucoDetector.m_markersCorners[i][2].y, m_arucoDetector.m_markersCorners[i][3].y });
+				m_dataPlotter.m_figures["Marker position"].addData({ m_arucoDetector.m_tvecs[markerId][0], m_arucoDetector.m_tvecs[markerId][1], m_arucoDetector.m_tvecs[markerId][2] });
+				m_dataPlotter.m_figures["Marker position histogram"].addData({ m_arucoDetector.m_tvecs[markerId][0], m_arucoDetector.m_tvecs[markerId][1], m_arucoDetector.m_tvecs[markerId][2] });
+				m_dataPlotter.m_figures["Marker rotation"].addData({ m_arucoDetector.m_rvecs[markerId][0], m_arucoDetector.m_rvecs[markerId][1], m_arucoDetector.m_rvecs[markerId][2] });
+				m_dataPlotter.m_figures["Marker rotation histogram"].addData({ m_arucoDetector.m_rvecs[markerId][0], m_arucoDetector.m_rvecs[markerId][1], m_arucoDetector.m_rvecs[markerId][2] });
+			}*/
 		#endif // PLOT_ENABLED
 	}
 	
@@ -185,8 +174,8 @@ int Main::step(cv::Mat* inputFramePtr) {
 	#ifdef PLOT_ENABLED
 		m_dataPlotter.m_figures["Table position"].addData({ m_arucoDetector.m_tableTvec[0], m_arucoDetector.m_tableTvec[1], m_arucoDetector.m_tableTvec[2] });
 		m_dataPlotter.m_figures["Table rotation"].addData({ m_arucoDetector.m_tableRvec[0], m_arucoDetector.m_tableRvec[1], m_arucoDetector.m_tableRvec[2] });
-		m_dataPlotter.m_figures["Own robot position"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2], robotTxFiltered, robotTyFiltered });
-		m_dataPlotter.m_figures["Own robot rotation"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2], robotRzFiltered });
+		m_dataPlotter.m_figures["Own robot position"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2], ownRobotTxFiltered, ownRobotTyFiltered });
+		m_dataPlotter.m_figures["Own robot rotation"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2], ownRobotRzFiltered });
 		//m_dataPlotter.m_figures["Own robot position histogram"].addData({ m_arucoDetector.m_ownRobotTvecTableFrame[0], m_arucoDetector.m_ownRobotTvecTableFrame[1], m_arucoDetector.m_ownRobotTvecTableFrame[2] });
 		//m_dataPlotter.m_figures["Own robot rotation histogram"].addData({ m_arucoDetector.m_ownRobotRvecTableFrame[0], m_arucoDetector.m_ownRobotRvecTableFrame[1], m_arucoDetector.m_ownRobotRvecTableFrame[2] });
 	
@@ -194,35 +183,12 @@ int Main::step(cv::Mat* inputFramePtr) {
 	m_profiler.updateTimepoint(5);
 	
 	#ifdef COMMUNICATION_ENABLED
-		std::string message;
-		int returnedCode;
-		message = fmt::format("A {} {} {}\n", ownRobotTxFiltered, ownRobotTyFiltered, ownRobotRzFiltered + 1.575f).c_str(); //TODO: remove 1.575f and make it cleaner
-		//spdlog::info("Sending \"{}\" to the server", message);
-		returnedCode = send(m_clientSocket, message.c_str(), message.size(), 0);
-		if (returnedCode < 0) { // failed to send message
-			m_failedMessagesCount++;
-			if (m_failedMessagesCount >= 3) {
-				spdlog::error("Failed 3 times to send messages");
-				stopCode = EXIT_FAILURE;
-				return EXIT_FAILURE;
-			}
-		}
-		
-		message = fmt::format("B {} {} {}", advRobotTxFiltered, advRobotTyFiltered, advRobotRzFiltered + 1.575f).c_str(); //TODO: remove 1.575f and make it cleaner
-		//spdlog::info("Sending \"{}\" to the server", message);
-		returnedCode = send(m_clientSocket, message.c_str(), message.size(), 0);
-		if (returnedCode < 0) { // failed to send message
-			m_failedMessagesCount++;
-			if (m_failedMessagesCount >= 3) {
-				spdlog::error("Failed 3 times to send messages");
-				stopCode = EXIT_FAILURE;
-				return EXIT_FAILURE;
-			}
-		}	
+		m_mqttClientManager.publishOwnRobotPosition(ownRobotTxFiltered, ownRobotTyFiltered, ownRobotRzFiltered);
+		m_mqttClientManager.publishAdvRobotPosition(advRobotTxFiltered, advRobotTyFiltered, advRobotRzFiltered);
 	#endif // COMMUNICATION_ENABLED
 	
 	#ifdef CVWINDOW_ENABLED
-		//m_arucoDetector.drawResults(inputFrame);
+		m_arucoDetector.drawResults(inputFrame);
 	#endif // CVWINDOW_ENABLED
 	m_profiler.updateTimepoint(6);
 	

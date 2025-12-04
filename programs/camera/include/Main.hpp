@@ -13,10 +13,6 @@
 #include <cmath>
 #include <functional>
 #include <cstring>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h> 
-#include <unistd.h>
 #include <iomanip>
 #include <sstream>
 
@@ -39,9 +35,14 @@
 	#include "dataPlotting/Figure.hpp"
 #endif // PLOT_ENABLED
 #include "filtering/NumericalFilter.hpp"
+#ifdef COMMUNICATION_ENABLED
+	#include "communication/MqttClientManager.hpp"
+#endif // COMMUNICATION_ENABLED
 #include "SpdlogUtils.hpp"
 
-#include "bcm2835.h"
+#ifdef ARM
+	#include "bcm2835.h"
+#endif // ARM
 
 
 std::string getTimestampedFilename();
@@ -74,10 +75,7 @@ public:
 	int64 m_startingTick;
 	
 	#ifdef COMMUNICATION_ENABLED
-		int m_clientSocket;
-		sockaddr_in m_serverAddress;
-		bool m_connectedToServer;
-		int m_failedMessagesCount;
+	MqttClientManager m_mqttClientManager = MqttClientManager(mqttServerURI, mqttClientId, mqttPersistDir, mqttOwnRobotPositionTopic, mqttOwnRobotPositionQOS, mqttAdvRobotPositionTopic, mqttAdvRobotPositionQOS);
 	#endif // COMMUNICATION_ENABLED
 	
 	

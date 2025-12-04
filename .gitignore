@@ -1,6 +1,9 @@
 .xmake/
 .vs/
 
+programs/protobuf/*.h
+programs/protobuf/*.c
+
 # Prerequisites
 *.d
 

@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message RobotPosition {
+  float x = 1;
+  float y = 2;
+  float theta = 3;
+  uint64 ts_ms = 4; // epoch ms
+  
+}

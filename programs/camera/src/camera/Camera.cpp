@@ -3,7 +3,9 @@
 Camera::Camera(int width, int height) {
 	m_width = width;
 	m_height = height;
-	libcameraCameraManager = std::make_unique<libcamera::CameraManager>(); // TODO: Needs to be executed only one time, put it elsewhere
+	#ifdef ARM
+		libcameraCameraManager = std::make_unique<libcamera::CameraManager>(); // TODO: Needs to be executed only one time, put it elsewhere
+	#endif //ARM
 }
 
 
@@ -94,12 +96,15 @@ int Camera::open(std::string source) {
 	#else
 		m_processingImageFile = false;
 		if (std::find_if(source.begin(), source.end(), [](unsigned char c) { return !std::isdigit(c); }) == source.end()) {
+			// Source is numeric, open camera by index
 			m_cap.open(atoi(source.c_str()));
 		} else {
 			m_filePath = source;
 			if (m_filePath.extension() == ".png" || m_filePath.extension() == ".jpg" || m_filePath.extension() == ".jpeg") {
+				// Source is an image file
 				m_processingImageFile = true;
 			} else {
+				// Source is a video file
 				m_cap.open(source);
 			}
 		}
@@ -187,7 +192,7 @@ void Camera::run() {
 			} else {
 				m_cap >> inputFrame;
 			}
-			int returnCode = processFrameFunction(inputFrame);
+			int returnCode = processFrameFunction(&inputFrame);
 			if (returnCode != EXIT_SUCCESS) {
 				running = false;
 			}

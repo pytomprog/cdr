@@ -16,8 +16,6 @@ ArucoDetector::ArucoDetector(Camera& camera, Profiler& profiler, Team ownTeam) :
 	
 	//TODO: Complete it: m_advRobotLastDetectionTimepoint = ;
 
-	m_futureCropRectangle = cv::Rect(0, 0, camera.m_width, camera.m_height);
-
 	m_ownTeam = ownTeam;
 }
 
@@ -119,11 +117,11 @@ void ArucoDetector::getMarkers3dPosition(cv::Mat& inputFrame) {
 
 void ArucoDetector::drawResults(cv::Mat& inputFrame) {
 	cv::rectangle(inputFrame, m_cropRectangle, cv::Scalar(255, 0, 0));
-	//cv::aruco::drawDetectedMarkers(inputFrame, m_markersCorners, m_markersId);
-	/*for (size_t i = 0; i < m_markersId.size(); i++) {
+	cv::aruco::drawDetectedMarkers(inputFrame, m_markersCorners, m_markersId);
+	for (size_t i = 0; i < m_markersId.size(); i++) {
 		int markerId = m_markersId[i];
 		cv::drawFrameAxes(inputFrame, m_camera.m_intrinsicMatrix, m_camera.m_distortionCoefficients, m_rvecs[markerId], m_tvecs[markerId], markerLength(markerId) * 1.5f, 2);
-	}*/
+	}
 
 	if (m_tableTvec[0] != 0 || m_tableTvec[1] != 0 || m_tableTvec[2] != 0) {
 		cv::Mat tableProjectedPoints;
